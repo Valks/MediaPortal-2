@@ -24,11 +24,11 @@
 
 using System;
 using MediaPortal.Common;
+using MediaPortal.Common.Services.ServerCommunication;
 using MediaPortal.Common.UPnP;
 using MediaPortal.Extensions.UserServices.FanArtService.Interfaces.UPnP;
 using MediaPortal.Extensions.UserServices.FanArtService.UPnP;
 using MediaPortal.UI.ServerCommunication;
-using MediaPortal.UI.Services.ServerCommunication;
 using UPnP.Infrastructure.CP;
 using UPnP.Infrastructure.CP.DeviceTree;
 
