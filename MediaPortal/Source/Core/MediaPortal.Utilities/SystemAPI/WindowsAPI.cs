@@ -131,7 +131,8 @@ namespace MediaPortal.Utilities.SystemAPI
     public static void AddAutostartApplication(string applicationPath, string registerName, bool user)
     {
       RegistryKey root = user ? Registry.CurrentUser : Registry.LocalMachine;
-      using (RegistryKey key = root.OpenSubKey(AUTOSTART_REGISTRY_KEY))
+      // open RegisteryKey with write access
+      using (RegistryKey key = root.OpenSubKey(AUTOSTART_REGISTRY_KEY, true))
       {
         if (key == null)
           throw new EnvironmentException(@"Unable to access/create registry key '{0}\{1}'",
@@ -150,7 +151,8 @@ namespace MediaPortal.Utilities.SystemAPI
     public static void RemoveAutostartApplication(string registerName, bool user)
     {
       RegistryKey root = user ? Registry.CurrentUser : Registry.LocalMachine;
-      using (RegistryKey key = root.OpenSubKey(AUTOSTART_REGISTRY_KEY))
+      // open RegisteryKey with write access
+      using (RegistryKey key = root.OpenSubKey(AUTOSTART_REGISTRY_KEY, true))
       {
         if (key == null)
           throw new EnvironmentException(@"Unable to access registry key '{0}\{1}'",
