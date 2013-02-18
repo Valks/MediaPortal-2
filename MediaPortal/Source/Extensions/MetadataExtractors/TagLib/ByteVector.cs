@@ -19,7 +19,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -1106,6 +1106,46 @@ namespace TagLib {
 		
 		/// <summary>
 		///    Converts an first four bytes of the current instance to
+		///    a <see cref="int" /> value.
+		/// </summary>
+		/// <param name="mostSignificantByteFirst">
+		///    <see langword="true" /> if the most significant byte
+		///    appears first (big endian format), or <see
+		///    langword="false" /> if the least significant byte appears
+		///    first (little endian format).
+		/// </param>
+		/// <returns>
+		///    A <see cref="int"/> value containing the value read from
+		///    the current instance.
+		/// </returns>
+		public int ToInt (bool mostSignificantByteFirst)
+		{
+			int ret = 0;
+			int last = Count > 4 ? 3 : Count - 1;
+
+			for (int i = 0; i <= last; i++) {
+				int offset = mostSignificantByteFirst ? last-i : i;
+				ret |= (int) this[i] << (offset * 8);
+			}
+
+			return ret;
+		}
+
+		/// <summary>
+		///    Converts an first four bytes of the current instance to
+		///    a <see cref="int" /> value using big-endian format.
+		/// </summary>
+		/// <returns>
+		///    A <see cref="int"/> value containing the value read from
+		///    the current instance.
+		/// </returns>
+		public int ToInt ()
+		{
+			return ToInt (true);
+		}
+
+		/// <summary>
+		///    Converts an first four bytes of the current instance to
 		///    a <see cref="uint" /> value.
 		/// </summary>
 		/// <param name="mostSignificantByteFirst">
@@ -1220,6 +1260,82 @@ namespace TagLib {
 		{
 			return ToULong (true);
 		}
+
+        /// <summary>
+        ///    Converts an first four bytes of the current instance to
+        ///    a <see cref="float" /> value.
+        /// </summary>
+        /// <param name="mostSignificantByteFirst">
+        ///    <see langword="true" /> if the most significant byte
+        ///    appears first (big endian format), or <see
+        ///    langword="false" /> if the least significant byte appears
+        ///    first (little endian format).
+        /// </param>
+        /// <returns>
+        ///    A <see cref="float"/> value containing the value read
+        ///    from the current instance.
+        /// </returns>
+        public float ToFloat (bool mostSignificantByteFirst)
+        {
+            byte [] bytes = (byte []) Data.Clone ();
+
+            if (mostSignificantByteFirst) {
+                Array.Reverse (bytes);
+            }
+
+            return BitConverter.ToSingle (bytes, 0);
+        }
+
+        /// <summary>
+        ///    Converts an first four bytes of the current instance to
+        ///    a <see cref="float" /> value using big-endian format.
+        /// </summary>
+        /// <returns>
+        ///    A <see cref="float"/> value containing the value read
+        ///    from the current instance.
+        /// </returns>
+        public float ToFloat ()
+        {
+            return ToFloat (true);
+        }
+
+        /// <summary>
+        ///    Converts an first eight bytes of the current instance to
+        ///    a <see cref="double" /> value.
+        /// </summary>
+        /// <param name="mostSignificantByteFirst">
+        ///    <see langword="true" /> if the most significant byte
+        ///    appears first (big endian format), or <see
+        ///    langword="false" /> if the least significant byte appears
+        ///    first (little endian format).
+        /// </param>
+        /// <returns>
+        ///    A <see cref="double"/> value containing the value read
+        ///    from the current instance.
+        /// </returns>
+        public double ToDouble (bool mostSignificantByteFirst)
+        {
+            byte [] bytes = (byte []) Data.Clone ();
+
+            if (mostSignificantByteFirst) {
+                Array.Reverse (bytes);
+            }
+
+            return BitConverter.ToDouble (bytes, 0);
+        }
+
+        /// <summary>
+        ///    Converts an first eight bytes of the current instance to
+        ///    a <see cref="double" /> value using big-endian format.
+        /// </summary>
+        /// <returns>
+        ///    A <see cref="double"/> value containing the value read
+        ///    from the current instance.
+        /// </returns>
+        public double ToDouble ()
+        {
+            return ToDouble (true);
+        }
 		
 		/// <summary>
 		///    Converts a portion of the current instance to a <see
@@ -1658,13 +1774,56 @@ namespace TagLib {
 		{
 			return ByteVector.FromString (value, StringType.UTF8);
 		}
-
+        
 #endregion
 		
 		
 		
 #region Static Conversions
 		
+		/// <summary>
+		///    Converts a value into a data representation.
+		/// </summary>
+		/// <param name="value">
+		///    A <see cref="int"/> value to convert into bytes.
+		/// </param>
+		/// <param name="mostSignificantByteFirst">
+		///    <see langword="true" /> if the most significant byte is
+		///    to appear first (big endian format), or <see
+		///    langword="false" /> if the least significant byte is to
+		///    appear first (little endian format).
+		/// </param>
+		/// <returns>
+		///    A <see cref="ByteVector"/> object containing the encoded
+		///    representation of <paramref name="value" />.
+		/// </returns>
+		public static ByteVector FromInt (int value,
+		                                   bool mostSignificantByteFirst)
+		{
+			ByteVector vector = new ByteVector();
+			for(int i = 0; i < 4; i++) {
+				int offset = mostSignificantByteFirst ? 3-i : i;
+				vector.Add ((byte)(value >> (offset * 8) & 0xFF));
+			}
+
+			return vector;
+		}
+
+		/// <summary>
+		///    Converts an value into a big-endian data representation.
+		/// </summary>
+		/// <param name="value">
+		///    A <see cref="int"/> value to convert into bytes.
+		/// </param>
+		/// <returns>
+		///    A <see cref="ByteVector"/> object containing the encoded
+		///    representation of <paramref name="value" />.
+		/// </returns>
+		public static ByteVector FromInt (int value)
+		{
+			return FromInt (value, true);
+		}
+
 		/// <summary>
 		///    Converts an unsigned value into a data representation.
 		/// </summary>

@@ -1,12 +1,14 @@
 //
 // Tag.cs: Provide support for reading and writing ID3v2 tags.
 //
-// Author:
+// Authors:
 //   Brian Nickel (brian.nickel@gmail.com)
+//   Gabriel BUrt (gabriel.burt@gmail.com)
 //
 // Original Source:
 //   id3v2tag.cpp from TagLib
 //
+// Copyright (C) 2010 Novell, Inc.
 // Copyright (C) 2005-2007 Brian Nickel
 // Copyright (C) 2002,2003 Scott Wheeler (Original Implementation)
 //
@@ -16,7 +18,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -555,7 +557,9 @@ namespace TagLib.Id3v2 {
 			
 			bool has_footer = (header.Flags &
 				HeaderFlags.FooterPresent) != 0;
-			
+			bool unsynchAtFrameLevel = (header.Flags & HeaderFlags.Unsynchronisation) != 0 && Version >= 4;
+			bool unsynchAtTagLevel = (header.Flags & HeaderFlags.Unsynchronisation) != 0 && Version < 4;
+
 			header.MajorVersion = has_footer ? (byte) 4 : Version;
 			
 			ByteVector tag_data = new ByteVector ();
@@ -566,6 +570,9 @@ namespace TagLib.Id3v2 {
 			// Loop through the frames rendering them and adding
 			// them to the tag_data.
 			foreach (Frame frame in frame_list) {
+				if (unsynchAtFrameLevel)
+					frame.Flags |= FrameFlags.Unsynchronisation;
+
 				if ((frame.Flags &
 					FrameFlags.TagAlterPreservation) != 0)
 					continue;
@@ -577,8 +584,8 @@ namespace TagLib.Id3v2 {
 				}
 			}
 			
-			// Add unsynchronization bytes if necessary.
-			if ((header.Flags & HeaderFlags.Unsynchronisation) != 0)
+			// Add unsyncronization bytes if necessary.
+			if (unsynchAtTagLevel)
 				SynchData.UnsynchByteVector (tag_data);
 			
 			// Compute the amount of padding, and append that to
@@ -827,10 +834,10 @@ namespace TagLib.Id3v2 {
 			if (data == null)
 				throw new ArgumentNullException ("data");
 
-			// If the entire tag is marked as unsynchronized,
-			// resynchronize it.
-			
-			if ((header.Flags & HeaderFlags.Unsynchronisation) != 0)
+			// If the entire tag is marked as unsynchronized, and this tag
+			// is version id3v2.3 or lower, resynchronize it.
+			bool fullTagUnsynch =  (header.MajorVersion < 4) && ((header.Flags & HeaderFlags.Unsynchronisation) != 0);
+			if (fullTagUnsynch)
 				SynchData.ResynchByteVector (data);
 			
 			int frame_data_position = 0;
@@ -854,6 +861,7 @@ namespace TagLib.Id3v2 {
 			// for post-processing, so check for them as they are
 			// loaded.
 			TextInformationFrame tdrc = null;
+			TextInformationFrame tyer = null;
 			TextInformationFrame tdat = null;
 			TextInformationFrame time = null;
 			
@@ -865,21 +873,24 @@ namespace TagLib.Id3v2 {
 				// frame data.
 				if(data [frame_data_position] == 0)
 					break;
-				
+
 				Frame frame = null;
-				
+
 				try {
-					frame = FrameFactory.CreateFrame (data,
+					frame = FrameFactory.CreateFrame(
+						data,
 						ref frame_data_position,
 						header.MajorVersion,
-                        (header.Flags & HeaderFlags.Unsynchronisation) != 0);
+						fullTagUnsynch);
 				} catch (NotImplementedException) {
 					continue;
+				} catch (CorruptFileException) {
+					continue;
 				}
-				
+
 				if(frame == null)
 					break;
-				
+
 				// Only add frames that contain data.
 				if (frame.Size == 0)
 					continue;
@@ -897,6 +908,9 @@ namespace TagLib.Id3v2 {
 				if (tdrc == null &&
 					frame.FrameId.Equals (FrameType.TDRC)) {
 					tdrc = frame as TextInformationFrame;
+				} else if (tyer == null &&
+					frame.FrameId.Equals (FrameType.TYER)) {
+					tyer = frame as TextInformationFrame;
 				} else if (tdat == null &&
 					frame.FrameId.Equals (FrameType.TDAT)) {
 					tdat = frame as TextInformationFrame;
@@ -905,52 +919,44 @@ namespace TagLib.Id3v2 {
 					time = frame as TextInformationFrame;
 				}
 			}
-			
-			// Post-processing: Combine the three frames into one
-			// TDRC frame.
-			if (tdrc == null || tdat == null) {
-				if (tdat != null)
-					RemoveFrames (FrameType.TDAT);
-				
-				if (time != null)
-					RemoveFrames (FrameType.TIME);
-				
+
+			// Try to fill out the date/time of the TDRC frame.  Can't do that if no TDRC
+			// frame exists, or if there is no TDAT frame, or if TDRC already has the date.
+			if (tdrc == null || tdat == null || tdrc.ToString ().Length > 4) {
 				return;
 			}
-			
-			StringBuilder tdrc_text = new StringBuilder (
-				tdrc.ToString ());
-			
-			string tdat_text = tdat.ToString ();
-			
-			if (tdrc_text.Length != 4 || tdat_text.Length != 4) {
+
+			string year = tdrc.ToString ();
+			if (year.Length != 4)
+				return;
+
+			// Start with the year already in TDRC, then add the TDAT and TIME if available
+			StringBuilder tdrc_text = new StringBuilder ();
+			tdrc_text.Append (year);
+
+			// Add the date
+			if (tdat != null) {
+				string tdat_text = tdat.ToString ();
+				if (tdat_text.Length == 4) {
+					tdrc_text.Append ("-").Append (tdat_text, 0, 2)
+						.Append ("-").Append (tdat_text, 2, 2);
+
+					// Add the time
+					if (time != null) {
+						string time_text = time.ToString ();
+							
+						if (time_text.Length == 4)
+							tdrc_text.Append ("T").Append (time_text, 0, 2)
+								.Append (":").Append (time_text, 2, 2);
+
+						RemoveFrames (FrameType.TIME);
+					}
+				}
+
 				RemoveFrames (FrameType.TDAT);
-				
-				if (time != null)
-					RemoveFrames (FrameType.TIME);
-				
-				return;
 			}
-			
-			tdrc_text.Append ("-").Append (tdat_text, 0, 2)
-				.Append ("-").Append (tdat_text, 2, 2);
-			
-			RemoveFrames (FrameType.TDAT);
-			
-			if (time == null) {
-				tdrc.Text = new string [] {tdrc_text.ToString ()};
-				return;
-			}
-			
-			string time_text = time.ToString ();
-				
-			if (time_text.Length == 4)
-				tdrc_text.Append ("T").Append (time_text, 0, 2)
-					.Append (":").Append (time_text, 2, 2);
-					
-			tdrc.Text = new string [] {tdrc_text.ToString ()};
-			
-			RemoveFrames (FrameType.TIME);
+
+			tdrc.Text = new string [] { tdrc_text.ToString () };
 		}
 		
 #endregion
@@ -1042,21 +1048,51 @@ namespace TagLib.Id3v2 {
 		}
 
 		/// <summary>
-		/// Gets a TXXX frame via reference of the description field
+		/// Gets a TXXX frame via reference of the description field, optionally searching for the
+		/// frame in a case-sensitive manner.
 		/// </summary>
 		/// <param name="description">String containing the description field</param>
 		/// <returns>UserTextInformationFrame (TXXX) that corresponds to the description</returns>
-		private string GetUserTextAsString (string description){
+		private string GetUserTextAsString (string description, bool caseSensitive) {
 
 			//Gets the TXXX frame, frame will be null if nonexistant
 			UserTextInformationFrame frame = UserTextInformationFrame.Get (
-				this, description, false);
+				this, description, Tag.DefaultEncoding, false, caseSensitive);
 
 			//TXXX frames support multivalue strings, join them up and return
 			//only the text from the frame.
 			string result = frame == null ? null : string.Join (";",frame.Text);
 			return string.IsNullOrEmpty (result) ? null : result;
 
+		}
+
+		/// <summary>
+		/// Gets a TXXX frame via reference of the description field.
+		/// </summary>
+		/// <param name="description">String containing the description field</param>
+		/// <returns>UserTextInformationFrame (TXXX) that corresponds to the description</returns>
+		private string GetUserTextAsString (string description) {
+			return GetUserTextAsString (description, true);
+		}
+
+		/// <summary>
+		/// Creates and/or sets a UserTextInformationFrame (TXXX)  with the given
+		/// description and text, optionally searching for the frame in a case-sensitive manner.
+		/// </summary>
+		/// <param name="description">String containing the Description field for the
+		/// TXXX frame</param>
+		/// <param name="text">String containing the Text field for the TXXX frame</param>
+		private void SetUserTextAsString(string description, string text, bool caseSensitive) {
+			//Get the TXXX frame, create a new one if needed
+			UserTextInformationFrame frame = UserTextInformationFrame.Get(
+				this, description, Tag.DefaultEncoding, true, caseSensitive);
+
+			if (!string.IsNullOrEmpty(text)) {
+				frame.Text = text.Split(';');
+			} else {
+				//Text string is null or empty, delete the frame, prevent empties
+				RemoveFrame(frame);
+			}
 		}
 
 		/// <summary>
@@ -1067,19 +1103,7 @@ namespace TagLib.Id3v2 {
 		/// TXXX frame</param>
 		/// <param name="text">String containing the Text field for the TXXX frame</param>
 		private void SetUserTextAsString(string description, string text) {
-
-			//Get the TXXX frame, create a new one if needed
-			UserTextInformationFrame frame = UserTextInformationFrame.Get(
-				this, description, true);
-
-			if (!string.IsNullOrEmpty(text)) {
-				frame.Text = text.Split(';');
-			}
-			else {
-			//Text string is null or empty, delete the frame, prevent empties
-				RemoveFrame(frame);
-			}
-
+			SetUserTextAsString (description, text, true);
 		}
 
 		/// <summary>
@@ -1888,6 +1912,152 @@ namespace TagLib.Id3v2 {
 		public override string MusicBrainzReleaseCountry {
 			get {return GetUserTextAsString ("MusicBrainz Album Release Country");}
 			set {SetUserTextAsString ("MusicBrainz Album Release Country",value);}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain track gain in dB.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value in dB for the track gain as
+		///    per the ReplayGain specification.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "TXXX:REPLAYGAIN_TRACK_GAIN" frame.
+		///    http://wiki.hydrogenaudio.org/index.php?title=ReplayGain_specification#ID3v2
+		/// </remarks>
+		public override double ReplayGainTrackGain {
+			get {
+				string text = GetUserTextAsString ("REPLAYGAIN_TRACK_GAIN", false);
+				double value;
+
+				if (text == null) {
+					return double.NaN;
+				}
+				if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
+					text = text.Substring (0, text.Length - 2).Trim();
+				}
+				
+				if (double.TryParse (text, NumberStyles.Float,
+					CultureInfo.InvariantCulture, out value)) {
+					return value;
+				}
+				return double.NaN;
+			}
+			set {
+				if (double.IsNaN (value)) {
+					SetUserTextAsString ("REPLAYGAIN_TRACK_GAIN", null, false);
+				} else {
+					string text = value.ToString("0.00 dB",
+						CultureInfo.InvariantCulture);
+					SetUserTextAsString ("REPLAYGAIN_TRACK_GAIN", text, false);
+				}
+			}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain track peak sample.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value for the track peak as per the
+		///    ReplayGain specification.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "TXXX:REPLAYGAIN_TRACK_PEAK" frame.
+		///    http://wiki.hydrogenaudio.org/index.php?title=ReplayGain_specification#ID3v2
+		/// </remarks>
+		public override double ReplayGainTrackPeak {
+			get {
+				string text;
+				double value;
+
+				if ((text = GetUserTextAsString ("REPLAYGAIN_TRACK_PEAK", false)) !=
+					null && double.TryParse (text, NumberStyles.Float,
+						CultureInfo.InvariantCulture, out value)) {
+						return value;
+				}
+				return double.NaN;
+			}
+			set {
+				if (double.IsNaN (value)) {
+					SetUserTextAsString ("REPLAYGAIN_TRACK_PEAK", null, false);
+				} else {
+					string text = value.ToString ("0.000000", CultureInfo.InvariantCulture);
+					SetUserTextAsString ("REPLAYGAIN_TRACK_PEAK", text, false);
+				}
+			}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain album gain in dB.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value in dB for the album gain as
+		///    per the ReplayGain specification.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "TXXX:REPLAYGAIN_ALBUM_GAIN" frame.
+		///    http://wiki.hydrogenaudio.org/index.php?title=ReplayGain_specification#ID3v2
+		/// </remarks>
+		public override double ReplayGainAlbumGain {
+			get {
+				string text = GetUserTextAsString ("REPLAYGAIN_ALBUM_GAIN", false);
+				double value;
+
+				if (text == null) {
+					return double.NaN;
+				}
+				if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
+					text = text.Substring (0, text.Length - 2).Trim();
+				}
+				
+				if (double.TryParse (text, NumberStyles.Float,
+					CultureInfo.InvariantCulture, out value)) {
+					return value;
+				}
+				return double.NaN;
+			}
+			set {
+				if (double.IsNaN (value)) {
+					SetUserTextAsString ("REPLAYGAIN_ALBUM_GAIN", null, false);
+				} else {
+					string text = value.ToString ("0.00 dB",
+						CultureInfo.InvariantCulture);
+					SetUserTextAsString ("REPLAYGAIN_ALBUM_GAIN", text, false);
+				}
+			}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain album peak sample.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value for the album peak as per the
+		///    ReplayGain specification.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "TXXX:REPLAYGAIN_ALBUM_PEAK" frame.
+		///    http://wiki.hydrogenaudio.org/index.php?title=ReplayGain_specification#ID3v2
+		/// </remarks>
+		public override double ReplayGainAlbumPeak {
+			get {
+				string text;
+				double value;
+
+				if ((text = GetUserTextAsString ("REPLAYGAIN_ALBUM_PEAK", false)) !=
+					null && double.TryParse (text, NumberStyles.Float,
+						CultureInfo.InvariantCulture, out value)) {
+						return value;
+				}
+				return double.NaN;
+			}
+			set {
+				if (double.IsNaN (value)) {
+					SetUserTextAsString ("REPLAYGAIN_ALBUM_PEAK", null, false);
+				} else {
+					string text = value.ToString("0.000000", CultureInfo.InvariantCulture);
+					SetUserTextAsString ("REPLAYGAIN_ALBUM_PEAK", text, false);
+				}
+			}
 		}
 		
 		/// <summary>

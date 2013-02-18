@@ -16,7 +16,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -470,14 +470,12 @@ namespace TagLib.Id3v2 {
 			// [{desc}\0{value}], try splitting into three strings
 			// in case of a misformatted [{desc}\0{value}\0].
 			string [] split = data.ToStrings (encoding, 4, 3);
-
+			
 			if (split.Length == 0) {
-				// Bad comment frame. It lacks a description
-				// and text.
+				// No data in the frame.
 				description = String.Empty;
-				text = String.Empty;
-			}
-			else if (split.Length == 1) {
+				text        = String.Empty;
+			} else if (split.Length == 1) {
 				// Bad comment frame. Assume that it lacks a
 				// description.
 				description = String.Empty;

@@ -16,7 +16,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -26,7 +26,7 @@
 //
 
 using System.Collections.Generic;
-
+ 
 namespace TagLib.Id3v2
 {
 	/// <summary>
@@ -141,7 +141,7 @@ namespace TagLib.Id3v2
 			foreach (byte b in header.FrameId) {
 				char c = (char) b;
 					if ((c < 'A' || c > 'Z') &&
-						(c < '1' || c > '9'))
+						(c < '0' || c > '9'))
 						return null;
 			}
 
@@ -189,12 +189,7 @@ namespace TagLib.Id3v2
 			if (header.FrameId [0] == (byte) 'T')
 				return new TextInformationFrame (data, position,
 					header, version);
-
-      // Involved People List (frames 4.4 in 2.3. in 2.4 this is a TIPL frame)
-      if (header.FrameId == FrameType.IPLS)
-        return new TextInformationFrame(data, position,
-          header, version);
-
+			
 			// Unique File Identifier (frames 4.1)
 			if (header.FrameId == FrameType.UFID)
 				return new UniqueFileIdentifierFrame (data,
@@ -254,12 +249,7 @@ namespace TagLib.Id3v2
 			if (header.FrameId == FrameType.PRIV)
 				return new PrivateFrame (data, position, header,
 					version);
-
-      // Url Link (frames 4.3.1)
-      if (header.FrameId[0] == (byte)'W')
-        return new UrlLinkFrame(data, position,
-          header, version);
-
+			
 			return new UnknownFrame (data, position, header,
 				version);
 		}

@@ -16,7 +16,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -93,7 +93,7 @@ namespace TagLib.Id3v2
 			if (data == null)
 				throw new ArgumentNullException ("data");
 			
-			size = SynchData.ToUInt (data.Mid (0, 4));
+			size = (version == 3 ? 4u : 0u) + SynchData.ToUInt (data.Mid (0, 4));
 		}
 		
 #region ICloneable

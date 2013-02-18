@@ -13,7 +13,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -62,13 +62,26 @@ namespace TagLib {
 			typeof(TagLib.Aiff.File),
 			typeof(TagLib.Ape.File),
 			typeof(TagLib.Asf.File),
+			typeof(TagLib.Audible.File),
 			typeof(TagLib.Flac.File),
-			typeof(TagLib.MusePack.File),
+			typeof(TagLib.Matroska.File),
+			typeof(TagLib.Gif.File),
+			typeof(TagLib.Image.NoMetadata.File),
+			typeof(TagLib.Jpeg.File),
 			typeof(TagLib.Mpeg4.File),
-			typeof(TagLib.Mpeg.File),
 			typeof(TagLib.Mpeg.AudioFile),
+			typeof(TagLib.Mpeg.File),
+			typeof(TagLib.MusePack.File),
 			typeof(TagLib.Ogg.File),
+			typeof(TagLib.Png.File),
 			typeof(TagLib.Riff.File),
+			typeof(TagLib.Tiff.Arw.File),
+			typeof(TagLib.Tiff.Cr2.File),
+			typeof(TagLib.Tiff.Dng.File),
+			typeof(TagLib.Tiff.File),
+			typeof(TagLib.Tiff.Nef.File),
+			typeof(TagLib.Tiff.Pef.File),
+			typeof(TagLib.Tiff.Rw2.File),
 			typeof(TagLib.WavPack.File)
 		};
 		
@@ -110,7 +123,7 @@ namespace TagLib {
 		public static void Register (Type type)
 		{
 			Attribute [] attrs = Attribute.GetCustomAttributes (type,
-				typeof(SupportedMimeType));
+				typeof(SupportedMimeType), false);
 			
 			if(attrs == null || attrs.Length == 0)
 				return;

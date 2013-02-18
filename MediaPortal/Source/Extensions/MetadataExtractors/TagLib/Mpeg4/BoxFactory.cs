@@ -12,7 +12,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -66,17 +66,19 @@ namespace TagLib.Mpeg4 {
 			// entries.
 			if (parent.BoxType == BoxType.Stsd &&
 				parent.Box is IsoSampleDescriptionBox &&
-				index < (parent.Box as
-					IsoSampleDescriptionBox).EntryCount) {
-				if (handler != null &&
-					handler.HandlerType == BoxType.Soun)
-					return new IsoAudioSampleEntry (header,
-						file, handler);
-				else if (handler != null &&
-					handler.HandlerType == BoxType.Vide)
-					return new IsoVisualSampleEntry (header,
-						file, handler);
-				else
+				index < (parent.Box as IsoSampleDescriptionBox).EntryCount) {
+				if (handler != null && handler.HandlerType == BoxType.Soun)
+					return new IsoAudioSampleEntry (header, file, handler);
+				else if (handler != null && handler.HandlerType == BoxType.Vide)
+					return new IsoVisualSampleEntry (header, file, handler);
+				else if (handler != null && handler.HandlerType == BoxType.Alis) {
+					if (header.BoxType == BoxType.Text)
+						return new TextBox (header, file, handler);
+					else if (header.BoxType == BoxType.Url)
+						return new UrlBox (header, file, handler);
+					// This could be anything, so just parse it
+					return new UnknownBox (header, file, handler);
+				} else
 					return new IsoSampleEntry (header,
 						file, handler);
 			}

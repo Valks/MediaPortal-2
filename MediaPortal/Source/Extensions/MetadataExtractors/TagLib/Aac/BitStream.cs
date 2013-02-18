@@ -9,7 +9,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -43,6 +43,12 @@ namespace TagLib.Aac
 			
 		#region Constructors
 
+		/// <summary>
+		///    Construct a new <see cref="BitStream"/>.
+		/// </summary>
+		/// <param name="buffer">
+		///    A <see cref="System.Byte[]"/>, must be 7 bytes long.
+		/// </param>
 		public BitStream(byte[] buffer)
 		{
 			Debug.Assert(buffer.Length == 7, "buffer.Length == 7", "buffer size invalid");

@@ -17,7 +17,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -32,11 +32,12 @@ using System.Collections.Generic;
 
 namespace TagLib {
 	/// <summary>
-	///    This class implements <see cref="IAudioCodec" /> and <see
-	///    cref="IVideoCodec" /> and combines codecs to create generic media
-	///    properties for a file.
+	///    This class implements <see cref="IAudioCodec" />, <see
+	///    cref="IVideoCodec" /> and <see cref="IPhotoCodec" />
+	///    and combines codecs to create generic media properties
+	///    for a file.
 	/// </summary>
-	public class Properties : IAudioCodec, IVideoCodec
+	public class Properties : IAudioCodec, IVideoCodec, IPhotoCodec
 	{
 		#region Private Fields
 		
@@ -275,6 +276,35 @@ namespace TagLib {
 		}
 		
 		/// <summary>
+		///    Gets the number of bits per sample in the audio
+		///    represented by the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="int" /> value containing the number of bits
+		///    per sample in the audio represented by the current
+		///    instance.
+		/// </value>
+		/// <remarks>
+		///    This value is equal to the first non-zero quantization.
+		/// </remarks>
+		public int BitsPerSample {
+			get {
+				foreach (ICodec codec in codecs) {
+					if (codec == null ||
+						(codec.MediaTypes & MediaTypes.Audio) == 0)
+						continue;
+
+					ILosslessAudioCodec lossless = codec as ILosslessAudioCodec;
+
+					if (lossless != null && lossless.BitsPerSample != 0)
+						return lossless.BitsPerSample;
+				}
+
+				return 0;
+			}
+		}
+
+		/// <summary>
 		///    Gets the number of channels in the audio represented by
 		///    the current instance.
 		/// </summary>
@@ -366,6 +396,89 @@ namespace TagLib {
 			}
 		}
 		
+		#endregion
+
+
+
+		#region IPhotoCodec
+
+		/// <summary>
+		///    Gets the width of the photo represented by the current
+		///    instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="int" /> value containing the width of the
+		///    photo represented by the current instance.
+		/// </value>
+		public int PhotoWidth {
+			get {
+				foreach (ICodec codec in codecs) {
+					if (codec == null ||
+						(codec.MediaTypes & MediaTypes.Photo) == 0)
+						continue;
+
+					IPhotoCodec photo = codec as IPhotoCodec;
+
+					if (photo != null && photo.PhotoWidth != 0)
+						return photo.PhotoWidth;
+				}
+
+				return 0;
+			}
+		}
+
+		/// <summary>
+		///    Gets the height of the photo represented by the current
+		///    instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="int" /> value containing the height of the
+		///    photo represented by the current instance.
+		/// </value>
+		public int PhotoHeight {
+			get {
+				foreach (ICodec codec in codecs) {
+					if (codec == null ||
+						(codec.MediaTypes & MediaTypes.Photo) == 0)
+						continue;
+
+					IPhotoCodec photo = codec as IPhotoCodec;
+
+					if (photo != null && photo.PhotoHeight != 0)
+						return photo.PhotoHeight;
+				}
+
+				return 0;
+			}
+		}
+
+		/// <summary>
+		///    Gets the (format specific) quality indicator of the photo
+		///    represented by the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="int" /> value indicating the quality. A value
+		///    0 means that there was no quality indicator for the format
+		///    or the file.
+		/// </value>
+		public int PhotoQuality {
+			get {
+				foreach (ICodec codec in codecs) {
+					if (codec == null ||
+						(codec.MediaTypes & MediaTypes.Photo) == 0)
+						continue;
+
+					IPhotoCodec photo = codec as IPhotoCodec;
+
+					if (photo != null && photo.PhotoQuality != 0)
+						return photo.PhotoQuality;
+				}
+
+				return 0;
+			}
+		}
+
+
 		#endregion
 	}
 }

@@ -12,7 +12,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -77,10 +77,12 @@ namespace TagLib.Mpeg4 {
 		public static readonly ReadOnlyByteVector Stbl = "stbl";
 		public static readonly ReadOnlyByteVector Stco = "stco";
 		public static readonly ReadOnlyByteVector Stsd = "stsd";
+		public static readonly ReadOnlyByteVector Text = "text";
 		public static readonly ReadOnlyByteVector Tmpo = "tmpo";
 		public static readonly ReadOnlyByteVector Trak = "trak";
 		public static readonly ReadOnlyByteVector Trkn = "trkn";
 		public static readonly ReadOnlyByteVector Udta = "udta";
+		public static readonly ReadOnlyByteVector Url = AppleTag.FixId ("url");
 		public static readonly ReadOnlyByteVector Uuid = "uuid";
 		public static readonly ReadOnlyByteVector Wrt  = AppleTag.FixId ("wrt");
 		public static readonly ReadOnlyByteVector DASH = "----";
@@ -88,5 +90,8 @@ namespace TagLib.Mpeg4 {
 		// Handler types.
 		public static readonly ReadOnlyByteVector Soun = "soun";
 		public static readonly ReadOnlyByteVector Vide = "vide";
+
+		// Another handler type, found in wild in audio file ripped using iTunes
+		public static readonly ReadOnlyByteVector Alis = "alis";
 	}
 }

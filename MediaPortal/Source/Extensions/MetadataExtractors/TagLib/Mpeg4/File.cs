@@ -12,7 +12,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -22,6 +22,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TagLib.Mpeg4 {
 	/// <summary>
@@ -60,9 +62,9 @@ namespace TagLib.Mpeg4 {
 		private Properties  properties;
 		
 		/// <summary>
-		///    Contains the ISO user data box.
+		///    Contains the ISO user data boxes.
 		/// </summary>
-		private IsoUserDataBox udta_box;
+		private List<IsoUserDataBox> udta_boxes = new List<IsoUserDataBox> ();
 		
 		#endregion
 		
@@ -182,7 +184,11 @@ namespace TagLib.Mpeg4 {
 		public override TagLib.Properties Properties {
 			get {return properties;}
 		}
-		
+
+		protected List<IsoUserDataBox> UdtaBoxes {
+			get { return udta_boxes; }
+		}
+
 		#endregion
 		
 		
@@ -195,8 +201,10 @@ namespace TagLib.Mpeg4 {
 		/// </summary>
 		public override void Save ()
 		{
-			if (udta_box == null)
-				udta_box = new IsoUserDataBox ();
+			if (udta_boxes.Count == 0) {
+				IsoUserDataBox udtaBox = new IsoUserDataBox ();
+				udta_boxes.Add(udtaBox);
+			}
 			
 			// Try to get into write mode.
 			Mode = File.AccessMode.Write;
@@ -210,13 +218,20 @@ namespace TagLib.Mpeg4 {
 				long size_change = 0;
 				long write_position = 0;
 				
-				ByteVector tag_data = udta_box.Render ();
+				// To avoid rewriting udta blocks which might not have been modified,
+				// the code here will work correctly if:
+				// 1. There is a single udta for the entire file
+				//   - OR -
+				// 2. There are multiple utdtas, but only 1 of them contains the Apple ILST box.
+				// We should be OK in the vast majority of cases
+				IsoUserDataBox udtaBox = FindAppleTagUdta();
+				if (null == udtaBox)
+					udtaBox = new IsoUserDataBox ();
+				ByteVector tag_data = udtaBox.Render ();
 				
 				// If we don't have a "udta" box to overwrite...
-				if (parser.UdtaTree == null ||
-					parser.UdtaTree.Length == 0 ||
-					parser.UdtaTree [parser.UdtaTree.Length - 1
-					].BoxType != BoxType.Udta) {
+				if (udtaBox.ParentTree == null ||
+					udtaBox.ParentTree.Length == 0) {
 					
 					// Stick the box at the end of the moov box.
 					BoxHeader moov_header = parser.MoovTree [
@@ -233,8 +248,7 @@ namespace TagLib.Mpeg4 {
 							].Overwrite (this, size_change);
 				} else {
 					// Overwrite the old box.
-					BoxHeader udta_header = parser.UdtaTree [
-						parser.UdtaTree.Length - 1];
+					BoxHeader udta_header = udtaBox.ParentTree[udtaBox.ParentTree.Length - 1];
 					size_change = tag_data.Count -
 						udta_header.TotalBoxSize;
 					write_position = udta_header.Position;
@@ -242,9 +256,9 @@ namespace TagLib.Mpeg4 {
 						udta_header.TotalBoxSize);
 					
 					// Overwrite the parent box sizes.
-					for (int i = parser.UdtaTree.Length - 2; i >= 0;
+					for (int i = udtaBox.ParentTree.Length - 2; i >= 0;
 						i --)
-						size_change = parser.UdtaTree [i
+						size_change = udtaBox.ParentTree [i
 							].Overwrite (this, size_change);
 				}
 				
@@ -312,7 +326,11 @@ namespace TagLib.Mpeg4 {
 		{
 			if (type == TagTypes.Apple) {
 				if (apple_tag == null && create) {
-					apple_tag = new AppleTag (udta_box);
+					IsoUserDataBox udtaBox = FindAppleTagUdta();
+					if (null == udtaBox) {
+						udtaBox = new IsoUserDataBox();
+					}
+					apple_tag = new AppleTag (udtaBox);
 					tag.SetTags (apple_tag);
 				}
 				
@@ -374,17 +392,24 @@ namespace TagLib.Mpeg4 {
 				InvariantStartPosition = parser.MdatStartPosition;
 				InvariantEndPosition = parser.MdatEndPosition;
 				
-				udta_box = parser.UserDataBox;
+				udta_boxes.AddRange(parser.UserDataBoxes);
 				
-				if (udta_box != null && udta_box.GetChild (BoxType.Meta)
-					!= null && udta_box.GetChild (BoxType.Meta
-					).GetChild (BoxType.Ilst) != null)
-					TagTypesOnDisk |= TagTypes.Apple;
-				
-				if (udta_box == null)
-					udta_box = new IsoUserDataBox ();
-				
-				apple_tag = new AppleTag (udta_box);
+				// Ensure our collection contains at least a single empty box
+				if (udta_boxes.Count == 0) {
+					IsoUserDataBox dummy = new IsoUserDataBox ();
+					udta_boxes.Add(dummy);
+				}
+
+				// Check if a udta with ILST actually exists
+				if (IsAppleTagUdtaPresent ())
+					TagTypesOnDisk |= TagTypes.Apple;	//There is an udta present with ILST info
+
+				// Find the udta box with the Apple Tag ILST
+				IsoUserDataBox udtaBox = FindAppleTagUdta();
+				if (null == udtaBox) {
+					udtaBox = new IsoUserDataBox();
+				}
+				apple_tag = new AppleTag (udtaBox);
 				tag.SetTags (apple_tag);
 				
 				// If we're not reading properties, we're done.
@@ -414,6 +439,43 @@ namespace TagLib.Mpeg4 {
 			}
 		}
 		
+		/// <summary>
+		///    Find the udta box within our collection that contains the Apple ILST data.
+		/// </summary>
+		/// <remarks>
+		///		If there is a single udta in a file, we return that.
+		///		If there are multiple udtas, we search for the one that contains the ILST box.
+		/// </remarks>
+		private IsoUserDataBox FindAppleTagUdta ()
+		{
+			if (udta_boxes.Count == 1)
+				return udta_boxes[0];	//Single udta - just return it
+
+			// multiple udta : pick out the shallowest node which has an ILst tag
+			var udtaBox = udta_boxes
+				.Where (box => box.GetChildRecursively (BoxType.Ilst) != null)
+				.OrderBy (box => box.ParentTree.Length)
+				.FirstOrDefault ();
+
+			return udtaBox;
+		}
+
+		/// <summary>
+		///    Returns true if there is a udta with ILST present in our collection
+		/// </summary>
+		private bool IsAppleTagUdtaPresent ()
+		{
+			foreach (IsoUserDataBox udtaBox in udta_boxes) {
+				if (udtaBox.GetChild (BoxType.Meta)
+					!= null && udtaBox.GetChild (BoxType.Meta
+					).GetChild (BoxType.Ilst) != null)
+
+					return true;
+			}
+
+			return false;
+		}
+
 		#endregion
 	}
 }

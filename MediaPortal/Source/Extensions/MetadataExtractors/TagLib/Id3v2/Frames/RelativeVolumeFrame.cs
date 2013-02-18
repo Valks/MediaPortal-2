@@ -16,7 +16,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -484,8 +484,7 @@ namespace TagLib.Id3v2 {
 				int bytes = BitsToBytes (data [pos++]);
 				
 				if (data.Count < pos + bytes)
-					throw new CorruptFileException (
-						"Insufficient peak data.");
+					break;
 				
 				channels [type].PeakVolumeIndex = data.Mid (pos,
 					bytes).ToULong ();

@@ -13,7 +13,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -38,6 +38,12 @@ namespace TagLib.Mpeg4 {
 		///    Contains the children of the box.
 		/// </summary>
 		private IEnumerable<Box> children;
+
+		/// <summary>
+		///    Contains the box headers from the top of the file to the
+		///    current udta box.
+		/// </summary>
+		private BoxHeader [] parent_tree;
 		
 		#endregion
 		
@@ -101,6 +107,21 @@ namespace TagLib.Mpeg4 {
 			get {return children;}
 		}
 		
+		/// <summary>
+		///    Gets the box headers for the current "<c>udta</c>" box and
+		///    all parent boxes up to the top of the file.
+		/// </summary>
+		/// <value>
+		///    A <see cref="BoxHeader[]" /> containing the headers for
+		///    the current "<c>udta</c>" box and its parent boxes up to
+		///    the top of the file, in the order they appear, or <see
+		///    langword="null" /> if none is present.
+		/// </value>
+		public BoxHeader [] ParentTree {
+			get {return parent_tree;}
+			set {parent_tree = value;}
+		}
+
 		#endregion
 	}
 }

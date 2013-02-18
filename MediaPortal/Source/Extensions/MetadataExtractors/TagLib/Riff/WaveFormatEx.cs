@@ -12,7 +12,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -28,7 +28,7 @@ namespace TagLib.Riff {
 	///    This structure provides a representation of a Microsoft
 	///    WaveFormatEx structure.
 	/// </summary>
-	public struct WaveFormatEx : IAudioCodec
+	public struct WaveFormatEx : IAudioCodec, ILosslessAudioCodec
 	{
 #region Private Fields
 		
@@ -179,8 +179,14 @@ namespace TagLib.Riff {
 		}
 		
 #endregion
+
+#region ILosslessAudioCodec
 		
+		int ILosslessAudioCodec.BitsPerSample {
+			get {return bits_per_sample;}
+		}
 		
+#endregion
 		
 #region IAudioCodec
 		

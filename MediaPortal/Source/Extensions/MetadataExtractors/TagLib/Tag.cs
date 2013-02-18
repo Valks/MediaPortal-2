@@ -17,7 +17,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -89,6 +89,41 @@ namespace TagLib {
 		///    FLAC Metadata Blocks Tag
 		/// </summary>
 		FlacMetadata = 0x00000200,
+		
+		/// <summary>
+		///    TIFF IFD Tag
+		/// </summary>
+		TiffIFD = 0x00000400,
+
+		/// <summary>
+		///    XMP Tag
+		/// </summary>
+		XMP = 0x00000800,
+
+		/// <summary>
+		///    Jpeg Comment Tag
+		/// </summary>
+		JpegComment = 0x00001000,
+
+		/// <summary>
+		///    Gif Comment Tag
+		/// </summary>
+		GifComment = 0x00002000,
+
+		/// <summary>
+		///    native PNG keywords
+		/// </summary>
+		Png = 0x00004000,
+
+		/// <summary>
+		/// IPTC-IIM tag
+		/// </summary>
+		IPTCIIM = 0x00008000,
+
+		/// <summary>
+		///    Audible Metadata Blocks Tag
+		/// </summary>
+		AudibleMetadata = 0x00000400,
 		
 		/// <summary>
 		///    All tag types.
@@ -795,6 +830,54 @@ namespace TagLib {
 		/// </remarks>
 		public virtual string MusicBrainzReleaseCountry {
 			get { return null; }
+			set {}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain track gain in dB.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value in dB for the track gain as
+		///    per the ReplayGain specification.
+		/// </value>
+		public virtual double ReplayGainTrackGain {
+			get { return double.NaN; }
+			set {}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain track peak sample.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value for the track peak as per the
+		///    ReplayGain specification.
+		/// </value>
+		public virtual double ReplayGainTrackPeak {
+			get { return double.NaN; }
+			set {}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain album gain in dB.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value in dB for the album gain as
+		///    per the ReplayGain specification.
+		/// </value>
+		public virtual double ReplayGainAlbumGain {
+			get { return double.NaN; }
+			set {}
+		}
+
+		/// <summary>
+		///    Gets and sets the ReplayGain album peak sample.
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> value for the album peak as per the
+		///    ReplayGain specification.
+		/// </value>
+		public virtual double ReplayGainAlbumPeak {
+			get { return double.NaN; }
 			set {}
 		}
 

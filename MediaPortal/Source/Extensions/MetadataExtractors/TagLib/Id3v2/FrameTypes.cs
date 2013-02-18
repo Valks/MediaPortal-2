@@ -12,7 +12,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -42,7 +42,6 @@ namespace TagLib.Id3v2 {
 		public static readonly ReadOnlyByteVector COMM = "COMM";
 		public static readonly ReadOnlyByteVector EQUA = "EQUA";
 		public static readonly ReadOnlyByteVector GEOB = "GEOB";
-    public static readonly ReadOnlyByteVector IPLS = "IPLS";
 		public static readonly ReadOnlyByteVector MCDI = "MCDI";
 		public static readonly ReadOnlyByteVector PCNT = "PCNT";
 		public static readonly ReadOnlyByteVector POPM = "POPM";
@@ -82,14 +81,5 @@ namespace TagLib.Id3v2 {
 		public static readonly ReadOnlyByteVector UFID = "UFID";
 		public static readonly ReadOnlyByteVector USER = "USER";
 		public static readonly ReadOnlyByteVector USLT = "USLT";
-    public static readonly ReadOnlyByteVector WCOM = "WCOM";
-    public static readonly ReadOnlyByteVector WCOP = "WCOP";
-    public static readonly ReadOnlyByteVector WOAF = "WOAF";
-    public static readonly ReadOnlyByteVector WOAR = "WOAR";
-    public static readonly ReadOnlyByteVector WOAS = "WOAS";
-    public static readonly ReadOnlyByteVector WORS = "WORS";
-    public static readonly ReadOnlyByteVector WPAY = "WPAY";
-    public static readonly ReadOnlyByteVector WPUB = "WPUB";
-    public static readonly ReadOnlyByteVector WXXX = "WXXX";
 	}
 }

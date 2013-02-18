@@ -12,7 +12,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -340,7 +340,7 @@ namespace TagLib.Mpeg4 {
 				SetData (type, new ByteVectorCollection (data),
 					flags);
 		}
-
+      
 		/// <summary>
 		///    Sets the text for a specified box type.
 		/// </summary>
@@ -447,8 +447,8 @@ namespace TagLib.Mpeg4 {
 				data_box.Text = datastring;
 			} else {
 				//Create the new boxes, should use 1 for text as a flag
-				AppleAdditionalInfoBox amean_box = new AppleAdditionalInfoBox(BoxType.Mean, 0, 1);
-				AppleAdditionalInfoBox aname_box = new AppleAdditionalInfoBox(BoxType.Name, 0, 1);
+				AppleAdditionalInfoBox amean_box = new AppleAdditionalInfoBox(BoxType.Mean);
+				AppleAdditionalInfoBox aname_box = new AppleAdditionalInfoBox(BoxType.Name);
 				AppleDataBox adata_box = new AppleDataBox(BoxType.Data, 1);
 				amean_box.Text = meanstring;
 				aname_box.Text = namestring;

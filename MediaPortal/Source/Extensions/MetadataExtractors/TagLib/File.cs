@@ -19,7 +19,7 @@
 //
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
@@ -31,6 +31,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace TagLib {
 	
@@ -72,7 +73,7 @@ namespace TagLib {
 	///    variants, as it automatically detects the appropriate class from
 	///    the file extension or provided mime-type.</para>
 	/// </remarks>
-	public abstract class File
+	public abstract class File : IDisposable
 	{
 		#region Enums
 		
@@ -197,6 +198,12 @@ namespace TagLib {
 		///    the file ends.
 		/// </summary>
 		private long invariant_end_position = -1;
+
+		/// <summary>
+		///    The reasons (if any) why this file is marked as corrupt.
+		/// </summary>
+		private List<string> corruption_reasons = null;
+
 		#endregion
 		
 		
@@ -441,11 +448,66 @@ namespace TagLib {
 			}
 		}
 		
+		/// <summary>
+		///    Indicates if tags can be written back to the current file or not
+		/// </summary>
+		/// <value>
+		///    A <see cref="bool" /> which is true if tags can be written to the
+		///    current file, otherwise false.
+		/// </value>
+		public virtual bool Writeable {
+			get { return !PossiblyCorrupt; }
+		}
+
+		/// <summary>
+		///   Indicates whether or not this file may be corrupt.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if possibly corrupt; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		///    Files with unknown corruptions should not be written.
+		/// </remarks>
+		public bool PossiblyCorrupt {
+			get { return corruption_reasons != null; }
+		}
+
+		/// <summary>
+		///   The reasons for which this file is marked as corrupt.
+		/// </summary>
+		public IEnumerable<string> CorruptionReasons {
+			get {
+				return corruption_reasons;
+			}
+		}
+
 		#endregion
 		
 		
 		
 		#region Public Methods
+
+		/// <summary>
+		///	   Mark the file as corrupt.
+		/// </summary>
+		/// <param name="reason">
+		///    The reason why this file is considered to be corrupt.
+		/// </param>
+		internal void MarkAsCorrupt (string reason)
+		{
+			if (corruption_reasons == null)
+				corruption_reasons = new List<string> ();
+			corruption_reasons.Add (reason);
+		}
+
+		/// <summary>
+		///    Dispose the current file. Equivalent to setting the
+		///    mode to closed
+		/// </summary>
+		public void Dispose ()
+		{
+			Mode = AccessMode.Closed;
+		}
 		
 		/// <summary>
 		///    Saves the changes made in the current instance to the
@@ -605,8 +667,17 @@ namespace TagLib {
 			Mode = AccessMode.Read;
 			
 			byte [] buffer = new byte [length];
-			int count = file_stream.Read (buffer, 0, length);
-			return new ByteVector (buffer, count);
+
+			int count = 0, read = 0, needed = length;
+
+			do {
+				count = file_stream.Read (buffer, read, needed);
+
+				read += count;
+				needed -= count;
+			} while(needed > 0 && count != 0);
+
+			return new ByteVector (buffer, read);
 		}
 		
 		/// <summary>
@@ -674,119 +745,34 @@ namespace TagLib {
 			// starts at.
 			
 			long buffer_offset = startPosition;
-			ByteVector buffer;
-			
-			// These variables are used to keep track of a partial
-			// match that happens at the end of a buffer.
-			
-			int previous_partial_match = -1;
-			int before_previous_partial_match = -1;
-			
-			// Save the location of the current read pointer.  We
-			// will restore the position using Seek() before all
-			// returns.
-			
 			long original_position = file_stream.Position;
-			
-			// Start the search at the offset.
-			
-			file_stream.Position = startPosition;
-			
-			// This loop is the crux of the find method.  There are
-			// three cases that we want to account for:
-			//
-			// (1) The previously searched buffer contained a
-			//     partial match of the search pattern and we want
-			//     to see if the next one starts with the remainder
-			//     of that pattern.
-			//
-			// (2) The search pattern is wholly contained within the
-			//     current buffer.
-			//
-			// (3) The current buffer ends with a partial match of
-			//     the pattern.  We will note this for use in the 
-			//     next iteration, where we will check for the rest 
-			//     of the pattern.
-			//
-			// All three of these are done in two steps.  First we
-			// check for the pattern and do things appropriately if
-			// a match (or partial match) is found.  We then check 
-			// for "before".  The order is important because it 
-			// gives priority to "real" matches.
-			
-			for (buffer = ReadBlock (buffer_size); 
-				buffer.Count > 0;
-				buffer = ReadBlock(buffer_size)) {
-				
-				// (1) previous partial match
-				
-				if (previous_partial_match >= 0 &&
-					buffer_size > previous_partial_match) {
-					int pattern_offset = buffer_size -
-						previous_partial_match;
-					
-					if (buffer.ContainsAt (pattern, 0,
-						pattern_offset)) {
-						
-						file_stream.Position =
-							original_position;
-						
-						return buffer_offset -
-							buffer_size +
-							previous_partial_match;
+
+			try {
+				// Start the search at the offset.
+				file_stream.Position = startPosition;
+				for (var buffer = ReadBlock (buffer_size); buffer.Count > 0; buffer = ReadBlock(buffer_size)) {
+					var location = buffer.Find (pattern);
+					if (before != null) {
+						var beforeLocation = buffer.Find (before);
+						if (beforeLocation < location)
+							return -1;
 					}
+
+					if (location >= 0)
+						return buffer_offset + location;
+
+					// Ensure that we always rewind the stream a little so we never have a partial
+					// match where our data exists between the end of read A and the start of read B.
+					buffer_offset += buffer_size - pattern.Count;
+					if (before != null && before.Count > pattern.Count)
+						buffer_offset -= before.Count - pattern.Count;
+					file_stream.Position = buffer_offset;
 				}
 				
-				if (before != null &&
-					before_previous_partial_match >= 0 &&
-					buffer_size >
-					before_previous_partial_match) {
-					
-					int before_offset = buffer_size -
-						before_previous_partial_match;
-					
-					if (buffer.ContainsAt (before, 0,
-						before_offset)) {
-						
-						file_stream.Position =
-							original_position;
-						
-						return -1;
-					}
-				}
-				
-				// (2) pattern contained in current buffer
-				
-				long location = buffer.Find (pattern);
-				
-				if (location >= 0) {
-					file_stream.Position = original_position;
-					return buffer_offset + location;
-				}
-				
-				if (before != null && buffer.Find (before) >= 0) {
-					file_stream.Position = original_position;
-					return -1;
-				}
-				
-				// (3) partial match
-				
-				previous_partial_match =
-					buffer.EndsWithPartialMatch (pattern);
-				
-				if (before != null)
-					before_previous_partial_match =
-						buffer.EndsWithPartialMatch (
-							before);
-				
-				buffer_offset += buffer_size;
+				return -1;
+			} finally {
+				file_stream.Position = original_position;
 			}
-			
-			// Since we hit the end of the file, reset the status
-			// before continuing.
-			
-			file_stream.Position = original_position;
-			return -1;
 		}
 		
 		/// <summary>
@@ -868,7 +854,7 @@ namespace TagLib {
 				throw new ArgumentNullException ("pattern");
 			
 			Mode = AccessMode.Read;
-			
+
 			if (pattern.Count > buffer_size)
 				return -1;
 			
@@ -879,10 +865,10 @@ namespace TagLib {
 			
 			// These variables are used to keep track of a partial
 			// match that happens at the end of a buffer.
-			
+
 			/*
 			int previous_partial_match = -1;
-			int before_previous_partial_match = -1;
+			int after_previous_partial_match = -1;
 			*/
 			
 			// Save the location of the current read pointer.  We
@@ -893,22 +879,18 @@ namespace TagLib {
 			
 			// Start the search at the offset.
 			
-			long buffer_offset;
+			long buffer_offset = Length - startPosition;
+			int read_size = buffer_size;
 			
-			if (startPosition == 0)
-				Seek (-1 * buffer_size,
-					System.IO.SeekOrigin.End);
-			else
-				Seek (startPosition - 1 * buffer_size,
-					System.IO.SeekOrigin.Begin);
-			
-			buffer_offset = file_stream.Position;
+			read_size = (int) Math.Min (buffer_offset, buffer_size);
+			buffer_offset -= read_size;
+			file_stream.Position = buffer_offset;
 			
 			// See the notes in find() for an explanation of this
 			// algorithm.
 			
-			for (buffer = ReadBlock(buffer_size); buffer.Count > 0;
-				buffer = ReadBlock (buffer_size)) {
+			for (buffer = ReadBlock (read_size); buffer.Count > 0;
+				buffer = ReadBlock (read_size)) {
 				
 				// TODO: (1) previous partial match
 				
@@ -925,9 +907,11 @@ namespace TagLib {
 					return -1;
 				}
 				
-				// TODO: (3) partial match
-				
-				buffer_offset -= buffer_size;
+				read_size = (int) Math.Min (buffer_offset, buffer_size);
+				buffer_offset -= read_size;
+				if (read_size + pattern.Count > buffer_size)
+					buffer_offset += pattern.Count;
+
 				file_stream.Position = buffer_offset;
 			}
 			
@@ -1010,7 +994,7 @@ namespace TagLib {
 				throw new ArgumentNullException ("data");
 			
 			Mode = AccessMode.Write;
-			
+
 			if (data.Count == replace) {
 				file_stream.Position = start;
 				WriteBlock (data);
@@ -1441,6 +1425,7 @@ namespace TagLib {
 				file.MimeType = mimetype;
 				return file;
 			} catch (System.Reflection.TargetInvocationException e) {
+                PrepareExceptionForRethrow(e.InnerException);
 				throw e.InnerException;
 			}
 		}
@@ -1485,7 +1470,22 @@ namespace TagLib {
 			file_stream.SetLength (length);
 			Mode = old_mode;
 		}
-		
+
+        /// <summary>
+        /// Causes the original strack trace of the exception to be preserved when it is rethrown
+        /// </summary>
+        /// <param name="ex"></param>
+		private static void PrepareExceptionForRethrow(Exception ex)
+		{
+            var ctx = new StreamingContext(StreamingContextStates.CrossAppDomain);
+            var mgr = new ObjectManager(null, ctx);
+            var si = new SerializationInfo(ex.GetType(), new FormatterConverter());
+
+            ex.GetObjectData(si, ctx);
+            mgr.RegisterObject(ex, 1, si); // prepare for SetObjectData
+            mgr.DoFixups(); // ObjectManager calls SetObjectData
+		}
+
 		#endregion
 		
 		
