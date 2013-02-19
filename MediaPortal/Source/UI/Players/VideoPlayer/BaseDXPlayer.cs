@@ -27,7 +27,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using DirectShowLib;
+using DirectShow;
+using DirectShow.Helper;
 using MediaPortal.Common;
 using MediaPortal.Common.Logging;
 using MediaPortal.Common.Messaging;
@@ -162,7 +163,7 @@ namespace MediaPortal.UI.Players.Video
             IMediaEventEx eventEx = (IMediaEventEx) _graphBuilder;
 
             EventCode evCode;
-            IntPtr param1, param2;
+            int param1, param2;
 
             while (eventEx.GetEvent(out evCode, out param1, out param2, 0) == 0)
             {
@@ -204,23 +205,6 @@ namespace MediaPortal.UI.Players.Video
       {
         _resourceLocator = locator;
         _mediaItemTitle = mediaItemTitle;
-        if (_resourceLocator.NativeResourcePath.IsNetworkResource)
-        {
-          _resourceAccessor = _resourceLocator.CreateAccessor() as INetworkResourceAccessor;
-          if (_resourceAccessor == null)
-            throw new IllegalCallException("The VideoPlayer can only play network resources of type INetworkResourceAccessor");
-
-          ServiceRegistration.Get<ILogger>().Debug("{0}: Initializing for network media item '{1}'", PlayerTitle, SourcePathOrUrl);
-        }
-        else
-        {
-          ILocalFsResourceAccessor lfsr;
-          if (!_resourceLocator.TryCreateLocalFsAccessor(out lfsr))
-            throw new IllegalCallException("The VideoPlayer can only play local file system resources");
-
-          _resourceAccessor = lfsr;
-          ServiceRegistration.Get<ILogger>().Debug("{0}: Initializing for media item '{1}'", PlayerTitle, SourcePathOrUrl);
-        }
 
         // Create a DirectShow FilterGraph
         CreateGraphBuilder();
@@ -243,8 +227,11 @@ namespace MediaPortal.UI.Players.Video
         ServiceRegistration.Get<ILogger>().Debug("{0}: Adding preferred codecs", PlayerTitle);
         AddPreferredCodecs();
 
-        ServiceRegistration.Get<ILogger>().Debug("{0}: Adding file source", PlayerTitle);
-        AddFileSource();
+        // create a resource accessor which will be used by the source filter
+        _resourceAccessor = _resourceLocator.CreateAccessor();
+
+        ServiceRegistration.Get<ILogger>().Debug("{0}: Adding source filter", PlayerTitle);
+        AddSourceFilter();
 
         ServiceRegistration.Get<ILogger>().Debug("{0}: Run graph", PlayerTitle);
 
@@ -255,7 +242,7 @@ namespace MediaPortal.UI.Players.Video
         // Now run the graph, i.e. the DVD player needs a running graph before getting informations from dvd filter.
         IMediaControl mc = (IMediaControl) _graphBuilder;
         int hr = mc.Run();
-        DsError.ThrowExceptionForHR(hr);
+        new HRESULT(hr).Throw();
 
         _initialized = true;
         OnGraphRunning();
@@ -265,31 +252,6 @@ namespace MediaPortal.UI.Players.Video
         Shutdown();
         throw;
       }
-    }
-
-    /// <summary>
-    /// Indicates if the current resource is a network resource, accessed by a <seealso cref="INetworkResourceAccessor"/>.
-    /// </summary>
-    public bool IsNetworkResource
-    {
-      get { return _resourceAccessor is INetworkResourceAccessor; }
-    }
-
-    /// <summary>
-    /// Indicates if the current resource is a local filesystem resource, accessed by a <seealso cref="ILocalFsResourceAccessor"/>.
-    /// </summary>
-    public bool IsLocalFilesystemResource
-    {
-      get { return _resourceAccessor is ILocalFsResourceAccessor; }
-    }
-
-    /// <summary>
-    /// Gets the current resource path or URL depending on the type (<see cref="IsNetworkResource"/> and <see cref="IsLocalFilesystemResource"/>).
-    /// </summary>
-    public string SourcePathOrUrl
-    {
-      get { return IsNetworkResource ? ((INetworkResourceAccessor)_resourceAccessor).URL : 
-        IsLocalFilesystemResource ? ((ILocalFsResourceAccessor)_resourceAccessor).LocalFileSystemPath : null; }
     }
 
     /// <summary>
@@ -413,13 +375,39 @@ namespace MediaPortal.UI.Players.Video
     }
 
     /// <summary>
-    /// Adds the file source filter to the graph.
+    /// Adds a source filter to the graph and sets the input.
     /// </summary>
-    protected virtual void AddFileSource()
+    protected virtual void AddSourceFilter()
     {
-      // Render the file
-      int hr = _graphBuilder.RenderFile(SourcePathOrUrl, null);
-      DsError.ThrowExceptionForHR(hr);
+      if (_resourceLocator.NativeResourcePath.IsNetworkResource)
+      {
+        var networkResourceAccessor = _resourceAccessor as INetworkResourceAccessor;
+
+        if (networkResourceAccessor == null)
+          throw new IllegalCallException("The VideoPlayer can only play network resources of type INetworkResourceAccessor");
+
+        ServiceRegistration.Get<ILogger>().Debug("{0}: Initializing for network media item '{1}'", PlayerTitle, networkResourceAccessor.URL);
+
+        // try to render the url and let DirectShow choose the source filter
+        int hr = _graphBuilder.RenderFile(networkResourceAccessor.URL, null);
+        new HRESULT(hr).Throw();
+      }
+      else
+      {
+        var fileSystemResourceAccessor = _resourceAccessor as IFileSystemResourceAccessor;
+
+        if (fileSystemResourceAccessor == null)
+          throw new IllegalCallException("The VideoPlayer can only play file resources of type IFileSystemResourceAccessor");
+
+        ServiceRegistration.Get<ILogger>().Debug("{0}: Initializing for file system media item '{1}'", PlayerTitle, fileSystemResourceAccessor.Path);
+
+        // use the DotNetStreamSourceFilter as source filter
+        var sourceFilter = new DotNetStreamSourceFilter();
+        sourceFilter.SetSourceStream(fileSystemResourceAccessor.OpenRead());
+        int hr = _graphBuilder.AddFilter(sourceFilter, sourceFilter.Name);
+        DSFilter source2 = new DSFilter(sourceFilter);
+        hr = source2.OutputPin.Render();
+      }
     }
 
     /// <summary>
