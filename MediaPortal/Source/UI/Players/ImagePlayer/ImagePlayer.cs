@@ -35,11 +35,13 @@ using MediaPortal.Common.Settings;
 using MediaPortal.UI.Players.Image.Animation;
 using MediaPortal.UI.Players.Image.Settings;
 using MediaPortal.UI.Presentation.Players;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Players;
 using MediaPortal.UI.SkinEngine.SkinManagement;
 using MediaPortal.Utilities;
 using MediaPortal.Utilities.Graphics;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 using RightAngledRotation = MediaPortal.UI.Presentation.Players.RightAngledRotation;
 
 namespace MediaPortal.UI.Players.Image
@@ -479,7 +481,7 @@ namespace MediaPortal.UI.Players.Image
           animationProgress = 0;
         animationProgress = 1-1/(5*animationProgress*animationProgress+1);
         RectangleF textureClip = _animator.GetZoomRect(animationProgress, ImageSize, outputSize);
-        return new RectangleF(textureClip.X * _textureMaxUV.Width, textureClip.Y * _textureMaxUV.Height, textureClip.Width * _textureMaxUV.Width, textureClip.Height * _textureMaxUV.Height);
+        return SharpDXHelper.CreateRectangleF(textureClip.X * _textureMaxUV.Width, textureClip.Y * _textureMaxUV.Height, textureClip.Width * _textureMaxUV.Width, textureClip.Height * _textureMaxUV.Height);
       }
     }
 

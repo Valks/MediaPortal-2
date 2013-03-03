@@ -26,8 +26,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.SkinManagement;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Effects
 {

@@ -25,6 +25,7 @@
 using System.Drawing;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.Utilities.DeepCopy;
 
@@ -150,15 +151,15 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
         if (row < 0) row = 0;
 
         PointF position = new PointF(
-            (float) ColumnDefinitions.GetOffset(col) + _innerRect.Location.X, 
-            (float) RowDefinitions.GetOffset(row) + _innerRect.Location.Y);
+            (float) ColumnDefinitions.GetOffset(col) + _innerRect.X, 
+            (float) RowDefinitions.GetOffset(row) + _innerRect.Y);
 
         SizeF childSize = new SizeF(
             (float) ColumnDefinitions.GetLength(col, GetColumnSpan(child)),
             (float) RowDefinitions.GetLength(row, GetRowSpan(child)));
 
         ArrangeChild(child, child.HorizontalAlignment, child.VerticalAlignment, ref position, ref childSize);
-        child.Arrange(new RectangleF(position, childSize));
+        child.Arrange(SharpDXHelper.CreateRectangleF(position, childSize));
       }
     }
 

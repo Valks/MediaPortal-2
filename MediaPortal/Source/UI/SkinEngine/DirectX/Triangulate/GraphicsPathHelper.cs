@@ -57,7 +57,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX.Triangulate
     /// <param name="baseRect">The rect which surrounds the created path.</param>
     /// <param name="radiusX">The X radius of the rounded edges.</param>
     /// <param name="radiusY">The Y radius of the rounded edges.</param>
-    public static GraphicsPath CreateRoundedRectPath(RectangleF baseRect, float radiusX, float radiusY)
+    public static GraphicsPath CreateRoundedRectPath(SharpDX.RectangleF baseRect, float radiusX, float radiusY)
     {
       return CreateRoundedRectWithTitleRegionPath(baseRect, radiusX, radiusY, false, 0f, 0f);
     }
@@ -66,7 +66,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX.Triangulate
     /// Creates a rectangular <see cref="GraphicsPath"/> with rounded edges, optionally with an open title
     /// region specified by the parameters <paramref name="titleInset"/> and <paramref name="titleWidth"/>.
     /// </summary>
-    /// <param name="baseRect">The rect which surrounds the created path.</param>
+    /// <param name="baseRectDx">The rect which surrounds the created path.</param>
     /// <param name="radiusX">The X radius of the rounded edges.</param>
     /// <param name="radiusY">The Y radius of the rounded edges.</param>
     /// <param name="withTitleRegion">If set to <c>true</c>, a title region will be left out.</param>
@@ -74,9 +74,10 @@ namespace MediaPortal.UI.SkinEngine.DirectX.Triangulate
     /// <paramref name="withTitleRegion"/> is set to <c>true</c>.</param>
     /// <param name="titleWidth">Width of the title region to leave out. This parameter will only be used if
     /// <paramref name="withTitleRegion"/> is set to <c>true</c>.</param>
-    public static GraphicsPath CreateRoundedRectWithTitleRegionPath(RectangleF baseRect, float radiusX, float radiusY,
+    public static GraphicsPath CreateRoundedRectWithTitleRegionPath(SharpDX.RectangleF baseRectDx, float radiusX, float radiusY,
         bool withTitleRegion, float titleInset, float titleWidth)
     {
+      RectangleF baseRect = baseRectDx.ToRectF();
       GraphicsPath result = new GraphicsPath();
       if (radiusX <= 0.0f && radiusY <= 0.0f || baseRect.Width == 0 || baseRect.Height == 0)
       {
@@ -87,7 +88,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX.Triangulate
 
           titleWidth = Math.Min(titleWidth, baseRect.Width - 2 * titleInset);
           // Right from the title to the upper right edge
-          result.AddLine(baseRect.Left + 2* titleInset + titleWidth, baseRect.Top,
+          result.AddLine(baseRect.Left + 2 * titleInset + titleWidth, baseRect.Top,
               baseRect.Right, baseRect.Top);
           // Upper right edge to lower right edge
           result.AddLine(baseRect.Right, baseRect.Top,
@@ -107,9 +108,9 @@ namespace MediaPortal.UI.SkinEngine.DirectX.Triangulate
       else
       {
         if (radiusX >= baseRect.Width / 2f)
-          radiusX = baseRect.Width/2f;
+          radiusX = baseRect.Width / 2f;
         if (radiusY >= baseRect.Height / 2f)
-          radiusY = baseRect.Height/2f;
+          radiusY = baseRect.Height / 2f;
         // create the arc for the rectangle sides and declare a graphics path object for the drawing 
         SizeF sizeF = new SizeF(radiusX * 2f, radiusY * 2f);
         RectangleF arc = new RectangleF(baseRect.Location, sizeF);

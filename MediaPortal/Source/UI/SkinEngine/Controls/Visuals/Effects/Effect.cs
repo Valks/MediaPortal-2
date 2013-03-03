@@ -27,8 +27,10 @@ using MediaPortal.UI.SkinEngine.ContentManagement;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.Rendering;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
+using Color = SharpDX.Color;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Effects
 {
@@ -43,7 +45,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Effects
 
     public bool BeginRender(Texture texture, RenderContext renderContext)
     {
-      if (_vertsBounds.IsEmpty)
+      if (_vertsBounds.IsEmpty())
         return false;
       return BeginRenderEffectOverride(texture, renderContext);
     }
@@ -71,7 +73,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Effects
         if (vert.X > maxx) maxx = vert.X;
         if (vert.Y > maxy) maxy = vert.Y;
       }
-      _vertsBounds = new RectangleF(minx, miny, maxx - minx, maxy - miny);
+      _vertsBounds = new RectangleF(minx, miny, maxx, maxy);
       return true;
     }
 
@@ -102,7 +104,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Effects
           unchecked
           {
             Color4 color = ColorConverter.FromColor(Color.White);
-            vert.Color = color.ToArgb();
+            vert.Color = color.ToBgra();
           }
           vert.Tu1 = u;
           vert.Tv1 = v;

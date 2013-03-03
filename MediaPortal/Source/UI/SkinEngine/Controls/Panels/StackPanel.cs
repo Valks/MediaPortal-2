@@ -27,9 +27,11 @@ using System.Drawing;
 using System.Linq;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.ScreenManagement;
 using MediaPortal.UI.SkinEngine.Utils;
 using MediaPortal.Utilities.DeepCopy;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Panels
 {
@@ -312,7 +314,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
             childSize.Width = actualExtendsInNonOrientationDirection;
 
             ArrangeChildHorizontal(child, child.HorizontalAlignment, ref position, ref childSize);
-            child.Arrange(new RectangleF(position, childSize));
+            child.Arrange(SharpDXHelper.CreateRectangleF(position, childSize));
             _totalHeight += desiredExtendsInOrientationDirection;
 
             startPosition += desiredExtendsInOrientationDirection;
@@ -324,7 +326,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
             childSize.Height = actualExtendsInNonOrientationDirection;
 
             ArrangeChildVertical(child, child.VerticalAlignment, ref position, ref childSize);
-            child.Arrange(new RectangleF(position, childSize));
+            child.Arrange(SharpDXHelper.CreateRectangleF(position, childSize));
             _totalWidth += desiredExtendsInOrientationDirection;
 
             startPosition += desiredExtendsInOrientationDirection;
@@ -398,9 +400,9 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
             float extendsInOrientationDirection = (float) SumActualExtendsInOrientationDirection(visibleChildren, Orientation,
                 first ? oldFirstVisibleChild : oldLastVisibleChild, index);
             if (Orientation == Orientation.Horizontal)
-              elementBounds.X -= extendsInOrientationDirection;
+              elementBounds.SetLeft(elementBounds.Left - extendsInOrientationDirection);
             else
-              elementBounds.Y -= extendsInOrientationDirection;
+              elementBounds.SetTop(elementBounds.Top - extendsInOrientationDirection);
             break;
           }
           index++;

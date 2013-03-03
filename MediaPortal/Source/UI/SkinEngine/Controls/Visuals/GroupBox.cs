@@ -26,10 +26,13 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using MediaPortal.Common.General;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.DirectX.Triangulate;
 using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.Utilities.DeepCopy;
+using Color = SharpDX.Color;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {
@@ -169,18 +172,18 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       float halfLabelHeight = headerLabelHeight/2;
       float halfThickness = (float) BorderThickness/2;
       float insetY = (float) Math.Max(halfThickness, halfLabelHeight) - halfThickness;
-      RectangleF borderRect = new RectangleF(finalRect.X, finalRect.Y + insetY,
+      RectangleF borderRect = SharpDXHelper.CreateRectangleF(finalRect.X, finalRect.Y + insetY,
           finalRect.Width, finalRect.Height - insetY);
       base.ArrangeBorder(borderRect);
       const float realHeaderInset = HEADER_INSET_LINE + HEADER_INSET_SPACE;
       float borderInsetX = GetBorderCornerInsetX();
-      _headerLabelRect = new RectangleF(
+      _headerLabelRect = SharpDXHelper.CreateRectangleF(
           finalRect.X + borderInsetX + realHeaderInset, finalRect.Y,
           finalRect.Width - (borderInsetX + realHeaderInset) * 2, headerLabelHeight);
       if (_headerLabelRect.Width < 0)
-        _headerLabelRect.Width = 0;
+        _headerLabelRect.SetWidth(0);
       if (_headerLabelRect.Height > finalRect.Height)
-        _headerLabelRect.Height = finalRect.Height;
+        _headerLabelRect.SetHeight(finalRect.Height);
 
       _headerLabel.Arrange(_headerLabelRect);
     }

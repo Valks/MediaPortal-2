@@ -36,6 +36,7 @@ using MediaPortal.UI.Presentation.Screens;
 using MediaPortal.UI.Presentation.SkinResources;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Triggers;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.InputManagement;
 using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.MpfElements.Resources;
@@ -43,7 +44,8 @@ using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.SkinManagement;
 using MediaPortal.UI.SkinEngine.Xaml.Interfaces;
 using MediaPortal.Utilities.Exceptions;
-using SlimDX;
+using SharpDX;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.ScreenManagement
 {
@@ -659,12 +661,12 @@ namespace MediaPortal.UI.SkinEngine.ScreenManagement
     public RenderContext CreateInitialRenderContext()
     {
       Matrix transform = Matrix.Scaling((float) SkinContext.WindowSize.Width / _skinWidth, (float) SkinContext.WindowSize.Height / _skinHeight, 1);
-      return new RenderContext(transform, new RectangleF(0, 0, _skinWidth, _skinHeight));
+      return new RenderContext(transform, SharpDXHelper.CreateRectangleF(0, 0, _skinWidth, _skinHeight));
     }
 
     protected RectangleF CreateCenterRect()
     {
-      return new RectangleF(_skinWidth / 2 - 10, _skinHeight / 2 - 10, _skinWidth / 2 + 10, _skinHeight / 2 + 10);
+      return SharpDXHelper.CreateRectangleF(_skinWidth / 2 - 10, _skinHeight / 2 - 10, _skinWidth / 2 + 10, _skinHeight / 2 + 10);
     }
 
     /// <summary>

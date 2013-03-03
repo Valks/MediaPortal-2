@@ -32,7 +32,7 @@ using MediaPortal.UI.Players.Video.Interfaces;
 using MediaPortal.UI.Players.Video.Settings;
 using MediaPortal.UI.Players.Video.Subtitles;
 using MediaPortal.UI.Players.Video.Tools;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 
 namespace MediaPortal.UI.Players.Video
 {

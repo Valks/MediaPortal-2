@@ -30,10 +30,10 @@ using MediaPortal.UI.SkinEngine.Controls.Brushes;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes;
 using MediaPortal.UI.SkinEngine.DirectX.Triangulate;
 using MediaPortal.UI.SkinEngine.MpfElements;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.DirectX;
-using RectangleF = System.Drawing.RectangleF;
 using PointF = System.Drawing.PointF;
 using SizeF = System.Drawing.SizeF;
 using MediaPortal.UI.SkinEngine.Xaml.Interfaces;
@@ -287,12 +287,12 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       FrameworkElement content = _initializedContent;
       if (content == null)
         return;
-      RectangleF layoutRect = new RectangleF(_innerRect.X, _innerRect.Y, _innerRect.Width, _innerRect.Height);
+      RectangleF layoutRect = SharpDXHelper.CreateRectangleF(_innerRect.X, _innerRect.Y, _innerRect.Width, _innerRect.Height);
       RemoveMargin(ref layoutRect, GetTotalEnclosingMargin());
-      PointF location = new PointF(layoutRect.Location.X, layoutRect.Location.Y);
-      SizeF size = new SizeF(layoutRect.Size);
+      PointF location = new PointF(layoutRect.X, layoutRect.Y);
+      SizeF size = layoutRect.SizeF();
       ArrangeChild(content, content.HorizontalAlignment, content.VerticalAlignment, ref location, ref size);
-      content.Arrange(new RectangleF(location, size));
+      content.Arrange(SharpDXHelper.CreateRectangleF(location, size));
     }
 
     /// <summary>
@@ -313,7 +313,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 
     protected virtual void ArrangeBorder(RectangleF finalRect)
     {
-      _outerBorderRect = new RectangleF(finalRect.Location, finalRect.Size);
+      _outerBorderRect = SharpDXHelper.CreateRectangleF(finalRect.Location(), finalRect.SizeF());
     }
 
     protected float GetBorderCornerInsetX()
@@ -337,8 +337,8 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       _performLayout = false;
 
       float borderThickness = (float) BorderThickness;
-      RectangleF innerBorderRect = new RectangleF(_outerBorderRect.X + borderThickness -0.5f, _outerBorderRect.Y + borderThickness -0.5f,
-          _outerBorderRect.Size.Width - 2*borderThickness + 0.5f, _outerBorderRect.Size.Height - 2*borderThickness + 0.5f);
+      RectangleF innerBorderRect = SharpDXHelper.CreateRectangleF(_outerBorderRect.X + borderThickness - 0.5f, _outerBorderRect.Y + borderThickness - 0.5f,
+          _outerBorderRect.Width - 2*borderThickness + 0.5f, _outerBorderRect.Height - 2*borderThickness + 0.5f);
       PerformLayoutBackground(innerBorderRect, context);
       PerformLayoutBorder(innerBorderRect, context);
     }

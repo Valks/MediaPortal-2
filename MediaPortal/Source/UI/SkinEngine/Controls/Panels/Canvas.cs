@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.MpfElements;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Panels
@@ -125,8 +126,8 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
     protected override void ArrangeOverride()
     {
       base.ArrangeOverride();
-      float x = _innerRect.Location.X;
-      float y = _innerRect.Location.Y;
+      float x = _innerRect.X;
+      float y = _innerRect.Y;
 
       foreach (FrameworkElement child in GetVisibleChildren())
       {
@@ -137,7 +138,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
         SizeF childSize = child.DesiredSize;
 
         // Arrange the child
-        child.Arrange(new RectangleF(location, childSize));
+        child.Arrange(SharpDXHelper.CreateRectangleF(location, childSize));
       }
     }
 

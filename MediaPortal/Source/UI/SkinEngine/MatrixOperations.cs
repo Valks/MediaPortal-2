@@ -24,7 +24,9 @@
 
 using System;
 using System.Drawing;
-using SlimDX;
+using MediaPortal.UI.SkinEngine.DirectX;
+using SharpDX;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine
 {
@@ -165,7 +167,7 @@ namespace MediaPortal.UI.SkinEngine
       matrix.Transform(ref p1);
       matrix.Transform(ref p2);
       matrix.Transform(ref p3);
-      RectangleF result = new RectangleF(
+      RectangleF result = SharpDXHelper.CreateRectangleF(
           Math.Min(Math.Min(p0.X, p1.X), Math.Min(p2.X, p3.X)),
           Math.Min(Math.Min(p0.Y, p1.Y), Math.Min(p2.Y, p3.Y)),
           Math.Max(Math.Abs(p0.X - p2.X), Math.Abs(p1.X - p3.X)),

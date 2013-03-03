@@ -28,8 +28,10 @@ using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Panels;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Styles;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.Utilities.DeepCopy;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.SpecialElements.Controls
 {
@@ -209,7 +211,7 @@ namespace MediaPortal.UI.SkinEngine.SpecialElements.Controls
             startPositionX += childSize.Width;
           }
 
-          firstChild.Arrange(new RectangleF(position, childSize));
+          firstChild.Arrange(SharpDXHelper.CreateRectangleF(position, childSize));
 
           // Lay out ellipsis
           if (_ellipsisControl != null)
@@ -230,7 +232,7 @@ namespace MediaPortal.UI.SkinEngine.SpecialElements.Controls
               startPositionX += childSize.Width;
             }
 
-            _ellipsisControl.Arrange(new RectangleF(position, childSize));
+            _ellipsisControl.Arrange(SharpDXHelper.CreateRectangleF(position, childSize));
           }
 
           int numBeforeEllipsis = childrenAfterEllipsis.Count - numShownChildrenAfterEllipsis;
@@ -261,7 +263,7 @@ namespace MediaPortal.UI.SkinEngine.SpecialElements.Controls
             startPositionX += childSize.Width;
           }
 
-          child.Arrange(new RectangleF(position, childSize));
+          child.Arrange(SharpDXHelper.CreateRectangleF(position, childSize));
         }
       }
     }

@@ -26,9 +26,10 @@ using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.ContentManagement;
 using MediaPortal.UI.SkinEngine.Rendering;
 using System.Drawing;
-using SlimDX;
+using SharpDX;
 using MediaPortal.Utilities.DeepCopy;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
+using Color = SharpDX.Color;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Brushes
 {

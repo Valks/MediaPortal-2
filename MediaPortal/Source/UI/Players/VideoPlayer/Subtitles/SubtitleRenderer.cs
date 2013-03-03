@@ -36,8 +36,9 @@ using MediaPortal.UI.Players.Video.Tools;
 using MediaPortal.UI.Presentation.Players;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.SkinManagement;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
+using Color = SharpDX.Color;
 
 namespace MediaPortal.UI.Players.Video.Subtitles
 {
@@ -573,7 +574,7 @@ namespace MediaPortal.UI.Players.Video.Subtitles
     protected static void CopyBits(IntPtr srcBits, ref Bitmap destBitmap, int width, int height, int widthBytes)
     {
       // get bits of allocated image
-      BitmapData bmData = destBitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+      BitmapData bmData = destBitmap.LockBits(new System.Drawing.Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
       int newSize = bmData.Stride * height;
       int size = widthBytes * height;
 
@@ -609,7 +610,7 @@ namespace MediaPortal.UI.Players.Video.Subtitles
         if (currentSubtitle == null || !currentSubtitle.ShouldDraw)
           return;
 
-        if (targetSurface == null || targetSurface.Disposed || subTexture == null)
+        if (targetSurface == null || targetSurface.IsDisposed || subTexture == null)
         {
           if (_drawCount > 0)
             ServiceRegistration.Get<ILogger>().Debug("Draw count for last sub: {0}", _drawCount);
@@ -621,7 +622,7 @@ namespace MediaPortal.UI.Players.Video.Subtitles
 
       try
       {
-        if (!subTexture.Disposed)
+        if (!subTexture.IsDisposed)
         {
           // TemporaryRenderTarget changes RenderTarget to texture and restores settings when done (Dispose)
           using (new TemporaryRenderTarget(targetSurface))
@@ -670,8 +671,8 @@ namespace MediaPortal.UI.Players.Video.Subtitles
       Bitmap bmp = new Bitmap(w, h);
 
       using (Graphics gBmp = Graphics.FromImage(bmp))
-      using (SolidBrush brush = new SolidBrush(Color.FromArgb(255, 255, 255)))
-      using (SolidBrush blackBrush = new SolidBrush(Color.FromArgb(0, 0, 0)))
+      using (SolidBrush brush = new SolidBrush(System.Drawing.Color.FromArgb(255, 255, 255)))
+      using (SolidBrush blackBrush = new SolidBrush(System.Drawing.Color.FromArgb(0, 0, 0)))
       {
         gBmp.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
         for (int i = 0; i < lc.Length; i++)

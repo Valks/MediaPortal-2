@@ -22,8 +22,8 @@
 
 #endregion
 
-using System.Drawing;
-using SlimDX;
+using MediaPortal.UI.SkinEngine.DirectX;
+using SharpDX;
 
 namespace MediaPortal.UI.SkinEngine.Rendering
 {
@@ -143,7 +143,7 @@ namespace MediaPortal.UI.SkinEngine.Rendering
 
     public void IncludeTransformedContentsBounds(RectangleF bounds)
     {
-      _transformedRenderBounds = RectangleF.Union(_transformedRenderBounds, bounds);
+      _transformedRenderBounds = System.Drawing.RectangleF.Union(_transformedRenderBounds.ToRectF(), bounds.ToRectF()).FromRectF();
     }
   }
 }

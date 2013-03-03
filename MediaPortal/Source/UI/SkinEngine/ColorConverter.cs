@@ -22,8 +22,9 @@
 
 #endregion
 
-using SlimDX;
-using System.Drawing;
+using MediaPortal.UI.SkinEngine.DirectX;
+using SharpDX;
+using Color = SharpDX.Color;
 
 namespace MediaPortal.UI.SkinEngine
 {
@@ -45,7 +46,7 @@ namespace MediaPortal.UI.SkinEngine
       r *= 255;
       g *= 255;
       b *= 255;
-      return Color.FromArgb((int)a, (int)r, (int)g, (int)b);
+      return SharpDXHelper.FromArgb((int) a, (int) r, (int) g, (int) b);
     }
   }
 }

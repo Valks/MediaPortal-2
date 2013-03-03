@@ -36,10 +36,12 @@ using MediaPortal.UI.SkinEngine.ScreenManagement;
 using MediaPortal.UI.SkinEngine.Settings;
 using MediaPortal.UI.SkinEngine.Xaml;
 using MediaPortal.Utilities.Exceptions;
-using SlimDX;
+using SharpDX;
 using MediaPortal.Utilities.DeepCopy;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 using Brush = MediaPortal.UI.SkinEngine.Controls.Brushes.Brush;
+using Color = SharpDX.Color;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {
@@ -450,7 +452,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     {
       DeallocateCursor();
       Color4 col = ColorConverter.FromColor(Color);
-      int color = col.ToArgb();
+      int color = col.ToBgra();
 
       PositionColoredTextured[] verts = PositionColoredTextured.CreateQuad_Fan(
           cursorBounds.Left - 0.5f, cursorBounds.Top - 0.5f, cursorBounds.Right - 0.5f, cursorBounds.Bottom - 0.5f,
@@ -555,7 +557,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
         if (_virtualPosition + caretX > _innerRect.Width - 10)
           _virtualPosition = _innerRect.Width * 2 / 3 - caretX;
         Bound(ref _virtualPosition, -caretX, 0);
-        RectangleF cursorBounds = new RectangleF(_innerRect.X + _virtualPosition + caretX, _innerRect.Y + textInsetY, CURSOR_THICKNESS, textHeight);
+        RectangleF cursorBounds = SharpDXHelper.CreateRectangleF(_innerRect.X + _virtualPosition + caretX, _innerRect.Y + textInsetY, CURSOR_THICKNESS, textHeight);
         UpdateCursorShape(cursorBounds, localRenderContext.ZOrder);
       }
 

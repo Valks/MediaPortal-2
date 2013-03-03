@@ -28,8 +28,9 @@ using System.Drawing;
 using MediaPortal.UI.SkinEngine.ContentManagement;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.SkinManagement;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Rendering
 {

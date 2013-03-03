@@ -27,9 +27,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using MediaPortal.Common.General;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.Utilities;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
 using MediaPortal.Utilities.DeepCopy;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Panels
 {
@@ -244,7 +246,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
             ActualPosition.Y + (i / _actualColumns - _scrollIndexY)*_actualRowHeight);
 
         ArrangeChild(child, child.HorizontalAlignment, child.VerticalAlignment, ref position, ref childSize);
-        child.Arrange(new RectangleF(position, childSize));
+        child.Arrange(SharpDXHelper.CreateRectangleF(position, childSize));
       }
     }
 

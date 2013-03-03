@@ -32,9 +32,10 @@ using MediaPortal.Common.Logging;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.SkinManagement;
 using MediaPortal.Utilities.Network;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
 using MediaPortal.Common.Services.ThumbnailGenerator;
+using Color = SharpDX.Color;
 
 // TODO: Add support for web thumbnails? Requires changing IThumbnailGenerator
 
@@ -756,11 +757,13 @@ namespace MediaPortal.UI.SkinEngine.ContentManagement.AssetCore
             buffer[offset++] = _color.A;
           }
 
-          _texture = new Texture(GraphicsDevice.Device, TEXTURE_SIZE, TEXTURE_SIZE, 1, Usage.Dynamic, Format.A8R8G8B8,
-                Pool.Default);
+          _texture = new Texture(GraphicsDevice.Device, TEXTURE_SIZE, TEXTURE_SIZE, 1, Usage.Dynamic, Format.A8R8G8B8, Pool.Default);
 
-          DataRectangle rect = _texture.LockRectangle(0, LockFlags.Discard);
-          rect.Data.Write(buffer, 0, buffer.Length);
+          DataStream dataStream;
+          _texture.LockRectangle(0, LockFlags.Discard, out dataStream);
+
+          using (dataStream)
+            dataStream.Write(buffer, 0, buffer.Length);
           _texture.UnlockRectangle(0);
 
           _width = TEXTURE_SIZE;

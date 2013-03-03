@@ -27,8 +27,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Brushes;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.Utilities.DeepCopy;
+using Color = SharpDX.Color;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {
@@ -162,8 +165,8 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
           differenceY = CalculateVisibleScrollDifference(elementBounds.Y, elementBounds.Height, ActualPosition.Y, ActualHeight);
 
         // Change rect as if children were already re-arranged
-        elementBounds.X += differenceX;
-        elementBounds.Y += differenceY;
+        elementBounds.SetLeft(elementBounds.Left + differenceX);
+        elementBounds.SetTop(elementBounds.Top + differenceY);
         SetScrollOffset(_actualScrollOffsetX + differenceX, _actualScrollOffsetY + differenceY);
       }
       base.BringIntoView(element, elementBounds);
@@ -208,7 +211,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
         SizeF availableSize;
         if (_doScroll || AutoCentering != ScrollAutoCenteringEnum.None)
         {
-          availableSize = _innerRect.Size;
+          availableSize = _innerRect.SizeF();
           if (desiredSize.Width > _innerRect.Width)
           {
             if (!IsHorzCentering)
@@ -233,17 +236,17 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
           _scrollOffsetX = 0;
           _scrollOffsetY = 0;
           position = new PointF(_innerRect.X, _innerRect.Y);
-          availableSize = _innerRect.Size;
+          availableSize = _innerRect.SizeF();
         }
 
         if (HorizontalFitToSpace)
-          availableSize.Width = _innerRect.Size.Width;
+          availableSize.Width = _innerRect.Width;
         if (VerticalFitToSpace)
-          availableSize.Height = _innerRect.Size.Height;
+          availableSize.Height = _innerRect.Height;
 
         ArrangeChild(_templateControl, _templateControl.HorizontalAlignment, _templateControl.VerticalAlignment,
             ref position, ref availableSize);
-        RectangleF childRect = new RectangleF(position, availableSize);
+        RectangleF childRect = SharpDXHelper.CreateRectangleF(position, availableSize);
         _templateControl.Arrange(childRect);
       }
       _actualScrollOffsetX = _scrollOffsetX;

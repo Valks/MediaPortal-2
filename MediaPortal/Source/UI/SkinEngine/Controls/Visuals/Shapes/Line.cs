@@ -28,8 +28,8 @@ using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.DirectX.Triangulate;
 using MediaPortal.UI.SkinEngine.Rendering;
-using SlimDX.Direct3D9;
-using RectangleF = System.Drawing.RectangleF;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 using PointF = System.Drawing.PointF;
 using SizeF = System.Drawing.SizeF;
 using MediaPortal.Utilities.DeepCopy;
@@ -162,9 +162,9 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
 
     protected override SizeF CalculateInnerDesiredSize(SizeF totalSize)
     {
-      using (GraphicsPath p = GetLine(new RectangleF(new PointF(0, 0), totalSize)))
+      using (GraphicsPath p = GetLine(SharpDXHelper.CreateRectangleF(new PointF(0, 0), totalSize)))
       {
-        RectangleF bounds = p.GetBounds();
+        RectangleF bounds = p.GetBounds().FromRectF();
 
         return new SizeF(bounds.Width, bounds.Height);
       }
@@ -194,7 +194,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
       {
         matrix.RotateAt(ang, new PointF(x1, y1), MatrixOrder.Append);
         matrix.Translate(baseRect.X, baseRect.Y, MatrixOrder.Append);
-        RectangleF bounds = mPath.GetBounds(matrix);
+        RectangleF bounds = mPath.GetBounds(matrix).FromRectF();
         matrix.Scale(baseRect.Width / bounds.Width, baseRect.Height / bounds.Height);
         mPath.Transform(matrix);
       }

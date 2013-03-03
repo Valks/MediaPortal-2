@@ -171,19 +171,19 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
 
     #endregion
 
-    protected SlimDX.Direct3D9.TextureAddress SpreadAddressMode
+    protected SharpDX.Direct3D9.TextureAddress SpreadAddressMode
     {
       get
       {
         switch (SpreadMethod)
         {
           case GradientSpreadMethod.Repeat:
-            return SlimDX.Direct3D9.TextureAddress.Wrap;
+            return SharpDX.Direct3D9.TextureAddress.Wrap;
           case GradientSpreadMethod.Reflect:
-            return SlimDX.Direct3D9.TextureAddress.Mirror;
+            return SharpDX.Direct3D9.TextureAddress.Mirror;
           //case GradientSpreadMethod.Pad:
           default:
-            return SlimDX.Direct3D9.TextureAddress.Clamp;
+            return SharpDX.Direct3D9.TextureAddress.Clamp;
         }
       }
     }

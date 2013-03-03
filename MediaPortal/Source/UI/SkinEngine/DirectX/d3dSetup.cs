@@ -35,7 +35,7 @@ using MediaPortal.Common.Logging;
 using MediaPortal.Common.Settings;
 using MediaPortal.UI.SkinEngine.Settings;
 using MediaPortal.Utilities;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 
 namespace MediaPortal.UI.SkinEngine.DirectX
 {
@@ -79,7 +79,6 @@ namespace MediaPortal.UI.SkinEngine.DirectX
 
     protected DisplayMode _desktopDisplayMode;
     protected D3DConfiguration _currentGraphicsConfiguration = null;
-    private PresentParameters _presentParams = null;
 
     public Form RenderTarget
     {
@@ -102,11 +101,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
       get { return _desktopDisplayMode.Width; }
     }
 
-    public PresentParameters PresentParameters
-    {
-      get { return _presentParams; }
-      set { _presentParams = value; }
-    }
+    public PresentParameters PresentParameters;
 
     public D3DConfiguration CurrentConfiguration
     {
@@ -115,7 +110,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
 
     public bool IsMultiSample
     {
-      get { return _presentParams.Multisample != MultisampleType.None; }
+      get { return PresentParameters.MultiSampleType != MultisampleType.None; }
     }
 
     public Present Present
@@ -193,7 +188,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
       GraphicsDeviceInfo deviceInfo = configuration.DeviceInfo;
 
       // Set up the presentation parameters
-      _presentParams = BuildPresentParamsFromSettings(_currentGraphicsConfiguration = configuration);
+      PresentParameters = BuildPresentParamsFromSettings(_currentGraphicsConfiguration = configuration);
 
       if ((deviceInfo.Caps.PrimitiveMiscCaps & PrimitiveMiscCaps.NullReference) != 0)
         // Warn user about null ref device that can't render anything
@@ -222,7 +217,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
           configuration.DeviceInfo.DevType,
           _renderTarget.Handle,
           createFlags | CreateFlags.Multithreaded | CreateFlags.EnablePresentStatistics,
-          _presentParams);
+          new[] { PresentParameters }, new DisplayModeEx[0]); // new DisplayModeEx[] is a temporary workaround for current SharpDX version, issue is fixed in next release
 
       // When moving from fullscreen to windowed mode, it is important to
       // adjust the window size after recreating the device rather than
@@ -454,7 +449,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
     /// </summary>
     public void BuildPresentParamsFromSettings()
     {
-      _presentParams = BuildPresentParamsFromSettings(_currentGraphicsConfiguration);
+      PresentParameters = BuildPresentParamsFromSettings(_currentGraphicsConfiguration);
     }
 
     /// <summary>
@@ -486,8 +481,8 @@ namespace MediaPortal.UI.SkinEngine.DirectX
       DeviceCombo dc = configuration.DeviceCombo;
       MultisampleType mst = settings.MultisampleType;
       mst = dc.MultisampleTypes.ContainsKey(mst) ? mst : MultisampleType.None;
-      result.Multisample = mst;
-      result.MultisampleQuality = 0;
+      result.MultiSampleType = mst;
+      result.MultiSampleQuality = 0;
       result.EnableAutoDepthStencil = false;
       result.AutoDepthStencilFormat = dc.DepthStencilFormats.FirstOrDefault(dsf =>
           !dc.DepthStencilMultiSampleConflicts.Contains(new DepthStencilMultiSampleConflict {DepthStencilFormat = dsf, MultisampleType = mst}));
@@ -506,7 +501,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
       result.BackBufferCount = 4; // 2 to 4 are recommended for FlipEx swap mode
       result.PresentationInterval = PresentInterval.One;
 #endif
-      result.FullScreenRefreshRateInHertz = result.Windowed ? 0 : configuration.DisplayMode.RefreshRate;
+      result.FullScreenRefreshRateInHz = result.Windowed ? 0 : configuration.DisplayMode.RefreshRate;
       
       // From http://msdn.microsoft.com/en-us/library/windows/desktop/bb173422%28v=vs.85%29.aspx :
       // To use multisampling, the SwapEffect member of D3DPRESENT_PARAMETER must be set to D3DSWAPEFFECT_DISCARD.

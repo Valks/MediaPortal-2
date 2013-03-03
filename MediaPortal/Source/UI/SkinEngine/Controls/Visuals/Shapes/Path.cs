@@ -34,8 +34,10 @@ using MediaPortal.UI.SkinEngine.DirectX.Triangulate;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.Xaml;
 using MediaPortal.Utilities.DeepCopy;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 using FillMode=System.Drawing.Drawing2D.FillMode;
+using Matrix = System.Drawing.Drawing2D.Matrix;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
 {
@@ -153,7 +155,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
     {
       using (GraphicsPath p = CalculateTransformedPath(new RectangleF(0, 0, 0, 0)))
       {
-        RectangleF bounds = p.GetBounds();
+        RectangleF bounds = p.GetBounds().FromRectF();
         return new SizeF(bounds.Width, bounds.Height);
       }
     }
@@ -314,10 +316,10 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
       GraphicsPath result = ParsePath();
       using (Matrix m = new Matrix())
       {
-        RectangleF bounds = result.GetBounds();
+        RectangleF bounds = result.GetBounds().FromRectF();
         _fillDisabled = bounds.Width < StrokeThickness || bounds.Height < StrokeThickness;
-        if (Width > 0) baseRect.Width = (float) Width;
-        if (Height > 0) baseRect.Height = (float) Height;
+        if (Width > 0) baseRect.SetWidth((float) Width);
+        if (Height > 0) baseRect.SetHeight((float) Height);
         float scaleW;
         float scaleH;
         if (Stretch == Stretch.Fill)

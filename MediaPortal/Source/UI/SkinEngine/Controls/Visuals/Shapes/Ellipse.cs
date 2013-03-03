@@ -27,8 +27,8 @@ using System.Drawing.Drawing2D;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.DirectX.Triangulate;
 using MediaPortal.UI.SkinEngine.Rendering;
-using SlimDX.Direct3D9;
-using RectangleF = System.Drawing.RectangleF;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
 {
@@ -75,7 +75,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
     private static GraphicsPath GetEllipse(RectangleF baseRect)
     {
       GraphicsPath mPath = new GraphicsPath();
-      mPath.AddEllipse(baseRect);
+      mPath.AddEllipse(baseRect.ToRectF());
       mPath.CloseFigure();
       mPath.Flatten();
       return mPath;

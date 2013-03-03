@@ -29,7 +29,7 @@ using System.Windows.Forms;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.DirectX.RenderStrategy;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 
 namespace MediaPortal.UI.SkinEngine.SkinManagement
 {

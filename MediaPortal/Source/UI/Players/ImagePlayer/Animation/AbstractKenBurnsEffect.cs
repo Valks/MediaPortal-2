@@ -24,6 +24,7 @@
 
 using System;
 using System.Drawing;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.Players.Image.Animation
 {

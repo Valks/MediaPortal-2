@@ -24,6 +24,8 @@
 
 using System;
 using System.Drawing;
+using MediaPortal.UI.SkinEngine.DirectX;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.Players.Image.Animation
 {
@@ -168,7 +170,7 @@ namespace MediaPortal.UI.Players.Image.Animation
           left = 0;
           break;
       }
-      return new RectangleF(left / outerSize.Width, top / outerSize.Height, innerSize.Width / outerSize.Width, innerSize.Height / outerSize.Height);
+      return SharpDXHelper.CreateRectangleF(left / outerSize.Width, top / outerSize.Height, innerSize.Width / outerSize.Width, innerSize.Height / outerSize.Height);
     }
 
     protected static RectangleF CalculatePanRect(SizeF outerSize, SizeF innerSize, float panX, float panY)
@@ -179,7 +181,7 @@ namespace MediaPortal.UI.Players.Image.Animation
       float left = (outerSize.Width - innerSize.Width) * panFactorX;
       float top = (outerSize.Height - innerSize.Height) * panFactorY;
 
-      return new RectangleF(left / outerSize.Width, top / outerSize.Height, innerSize.Width / outerSize.Width, innerSize.Height / outerSize.Height);
+      return SharpDXHelper.CreateRectangleF(left / outerSize.Width, top / outerSize.Height, innerSize.Width / outerSize.Width, innerSize.Height / outerSize.Height);
     }
   }
 }

@@ -27,8 +27,9 @@ using System.Drawing;
 using MediaPortal.Common.General;
 using MediaPortal.Common.Localization;
 using MediaPortal.UI.SkinEngine.Rendering;
-using SlimDX;
+using SharpDX;
 using MediaPortal.Utilities.DeepCopy;
+using Color = SharpDX.Color;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {

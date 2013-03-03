@@ -36,7 +36,7 @@ using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.ScreenManagement;
 using MediaPortal.UI.SkinEngine.Xaml;
 using MediaPortal.Utilities;
-using SlimDX;
+using SharpDX;
 using MediaPortal.UI.Control.InputManager;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Triggers;
 using MediaPortal.UI.SkinEngine.Controls.Animations;
@@ -45,6 +45,7 @@ using MediaPortal.UI.SkinEngine.MpfElements.Resources;
 using MediaPortal.UI.SkinEngine.Xaml.Interfaces;
 using MediaPortal.Utilities.DeepCopy;
 using MediaPortal.UI.SkinEngine.SkinManagement;
+using RectangleF = SharpDX.RectangleF;
 using Screen = MediaPortal.UI.SkinEngine.ScreenManagement.Screen;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
@@ -656,11 +657,11 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     /// <param name="margin">Margin to be added.</param>
     public static void AddMargin(ref RectangleF rect, Thickness margin)
     {
-      rect.X -= margin.Left;
-      rect.Y -= margin.Top;
+      rect.Left -= margin.Left;
+      rect.Top -= margin.Top;
 
-      rect.Width += margin.Left + margin.Right;
-      rect.Height += margin.Top + margin.Bottom;
+      rect.Right += margin.Right;
+      rect.Bottom += margin.Bottom;
     }
 
     /// <summary>
@@ -687,11 +688,11 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     /// <param name="margin">Margin to be removed.</param>
     public static void RemoveMargin(ref RectangleF rect, Thickness margin)
     {
-      rect.X += margin.Left;
-      rect.Y += margin.Top;
+      rect.Left += margin.Left;
+      rect.Top += margin.Top;
 
-      rect.Width -= margin.Left + margin.Right;
-      rect.Height -= margin.Top + margin.Bottom;
+      rect.Right -= margin.Right;
+      rect.Bottom -= margin.Bottom;
     }
 
     /// <summary>

@@ -33,9 +33,11 @@ using MediaPortal.Common.Messaging;
 using System.Linq;
 using MediaPortal.UI.Control.InputManager;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Templates;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.SkinManagement;
 using MediaPortal.Utilities;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {
@@ -790,28 +792,28 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       RectangleF? elementArrangeBounds = _settings.ElementArrangeBounds;
       SizeF keyboardSize = templateControl.DesiredSize;
       RectangleF actualBounds = ActualBounds;
-      if (actualBounds.Size.Width < keyboardSize.Width)
-        keyboardSize.Width = actualBounds.Size.Width;
-      if (actualBounds.Size.Height < keyboardSize.Height)
-        keyboardSize.Height = actualBounds.Size.Height;
+      if (actualBounds.Width < keyboardSize.Width)
+        keyboardSize.Width = actualBounds.Width;
+      if (actualBounds.Height < keyboardSize.Height)
+        keyboardSize.Height = actualBounds.Height;
       RectangleF keyboardRect;
       if (elementArrangeBounds.HasValue)
         // Arrange above or below elementArrangeBounds, horizontally centered in elementArrangeBounds
-        keyboardRect = new RectangleF(new PointF(
+        keyboardRect = SharpDXHelper.CreateRectangleF(new PointF(
             elementArrangeBounds.Value.Left + elementArrangeBounds.Value.Width / 2 - keyboardSize.Width / 2,
             elementArrangeBounds.Value.Bottom + keyboardSize.Height > actualBounds.Bottom ?
             elementArrangeBounds.Value.Top - keyboardSize.Height : elementArrangeBounds.Value.Bottom),
             keyboardSize);
       else
         // Center in actualBounds
-        keyboardRect = new RectangleF(
+        keyboardRect = SharpDXHelper.CreateRectangleF(
             actualBounds.Left + (actualBounds.Width - keyboardSize.Width) / 2,
             actualBounds.Top + (actualBounds.Height - keyboardSize.Height) / 2,
             keyboardSize.Width, keyboardSize.Height);
       if (keyboardRect.Left < actualBounds.Left)
-        keyboardRect.X = actualBounds.Left;
+        keyboardRect.SetLeft(actualBounds.Left);
       if (keyboardRect.Right > actualBounds.Right)
-        keyboardRect.X = actualBounds.Right - keyboardSize.Width;
+        keyboardRect.SetLeft(actualBounds.Right - keyboardSize.Width);
       templateControl.Arrange(keyboardRect);
     }
 

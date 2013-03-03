@@ -34,10 +34,13 @@ using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Players;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.SkinManagement;
-using SlimDX.Direct3D9;
-using SlimDX;
+using SharpDX.Direct3D9;
+using SharpDX;
 using MediaPortal.UI.Presentation.Players;
 using MediaPortal.Utilities.DeepCopy;
+using Color = SharpDX.Color;
+using Rectangle = SharpDX.Rectangle;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Brushes
 {
@@ -194,7 +197,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
           _lastVertsBounds == vertsBounds)
         return true;
 
-      SizeF targetSize = vertsBounds.Size;
+      SizeF targetSize = vertsBounds.SizeF();
 
       lock (sdvPlayer.SurfaceLock)
       {
@@ -205,10 +208,10 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
           return false;
         }
         SurfaceDescription desc = surface.Description;
-        _videoTextureClip = new Rectangle(cropVideoRect.X / desc.Width, cropVideoRect.Y / desc.Height,
+        _videoTextureClip = SharpDXHelper.CreateRectangleF(cropVideoRect.X / desc.Width, cropVideoRect.Y / desc.Height,
             cropVideoRect.Width / desc.Width, cropVideoRect.Height / desc.Height);
       }
-      _scaledVideoSize = cropVideoRect.Size;
+      _scaledVideoSize = cropVideoRect.Size();
 
       // Correct aspect ratio for anamorphic video
       if (!aspectRatio.IsEmpty && geometry.RequiresCorrectAspectRatio)
@@ -334,7 +337,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
         using (Surface target = _texture.GetSurfaceLevel(0))
           device.StretchRectangle(playerSurface, target, TextureFilter.None);
       }
-      return _imageContext.StartRender(renderContext, _scaledVideoSize, _texture, _videoTextureClip, BorderColor.ToArgb(), _lastFrameData);
+      return _imageContext.StartRender(renderContext, _scaledVideoSize, _texture, _videoTextureClip, BorderColor.ToBgra(), _lastFrameData);
     }
 
     protected virtual bool GetPlayer(out ISlimDXVideoPlayer player)

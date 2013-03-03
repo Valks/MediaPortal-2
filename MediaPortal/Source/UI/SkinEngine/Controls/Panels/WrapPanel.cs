@@ -27,9 +27,11 @@ using System.Drawing;
 using System.Linq;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.ScreenManagement;
 using MediaPortal.UI.SkinEngine.Utils;
 using MediaPortal.Utilities.DeepCopy;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Panels
 {
@@ -262,7 +264,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
           offset += desiredChildSize.Height;
         }
 
-        layoutChild.Arrange(new RectangleF(location, size));
+        layoutChild.Arrange(SharpDXHelper.CreateRectangleF(location, size));
       }
     }
 
@@ -347,7 +349,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
         int index = 0;
         while (index < numVisibleChildren)
         {
-          LineMeasurement line = CalculateLine(visibleChildren, index, _innerRect.Size, false);
+          LineMeasurement line = CalculateLine(visibleChildren, index, _innerRect.SizeF(), false);
           _arrangedLines.Add(line);
           index = line.EndIndex + 1;
         }
@@ -523,9 +525,9 @@ namespace MediaPortal.UI.SkinEngine.Controls.Panels
               float extendsInOrientationDirection = SumActualLineExtendsInNonOrientationDirection(lines,
                   first ? oldFirstVisibleLine : oldLastVisibleLine, lineIndex);
               if (Orientation == Orientation.Horizontal)
-                elementBounds.X -= extendsInOrientationDirection;
+                elementBounds.SetLeft(elementBounds.Left - extendsInOrientationDirection);
               else
-                elementBounds.Y -= extendsInOrientationDirection;
+                elementBounds.SetTop(elementBounds.Top - extendsInOrientationDirection);
               break;
             }
           }

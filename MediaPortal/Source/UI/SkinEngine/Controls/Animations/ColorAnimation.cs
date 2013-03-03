@@ -23,11 +23,12 @@
 #endregion
 
 using System;
-using System.Drawing;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Brushes;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Xaml;
 using MediaPortal.Utilities.DeepCopy;
+using SharpDX;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Animations
 {
@@ -124,7 +125,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Animations
       if (patc.DataDescriptor == null) return;
 
       Color from = From ?? ConvertToColor(patc.StartValue);
-      Color to = To ?? (By.HasValue ? Color.FromArgb(
+      Color to = To ?? (By.HasValue ? SharpDXHelper.FromArgb(
           from.A + By.Value.A,
           from.R + By.Value.R,
           from.G + By.Value.G,
@@ -153,7 +154,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Animations
       distB *= timepassed;
       distB += from.B;
 
-      object value = Color.FromArgb((int) distA, (int) distR, (int) distG, (int) distB);
+      object value = SharpDXHelper.FromArgb((int) distA, (int) distR, (int) distG, (int) distB);
       if (TypeConverter.Convert(value, patc.DataDescriptor.DataType, out value))
         patc.DataDescriptor.Value = value;
       else

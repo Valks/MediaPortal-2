@@ -34,7 +34,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using MediaPortal.UI.Players.Video.Tools;
 using MediaPortal.UI.SkinEngine.SkinManagement;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 
 namespace MediaPortal.UI.Players.Video
 {
@@ -55,7 +55,7 @@ namespace MediaPortal.UI.Players.Video
     /// <param name="dwSurface">Address of the DirectX surface.</param>
     /// <returns><c>0</c>, if the method succeeded, <c>!= 0</c> else.</returns>
     [PreserveSig]
-    int PresentSurface(Int16 cx, Int16 cy, Int16 arx, Int16 ary, uint dwSurface);
+    int PresentSurface(Int16 cx, Int16 cy, Int16 arx, Int16 ary, IntPtr dwSurface);
   }
 
   public delegate void RenderDlgt();
@@ -134,10 +134,10 @@ namespace MediaPortal.UI.Players.Video
 
     #region IEVRPresentCallback implementation
 
-    public int PresentSurface(short cx, short cy, short arx, short ary, uint dwSurface)
+    public int PresentSurface(short cx, short cy, short arx, short ary, IntPtr dwSurface)
     {
       lock (_lock)
-        if (dwSurface != 0 && cx != 0 && cy != 0)
+        if (dwSurface != IntPtr.Zero && cx != 0 && cy != 0)
         {
           if (cx != _originalVideoSize.Width || cy != _originalVideoSize.Height)
             _originalVideoSize = new Size(cx, cy);
@@ -145,7 +145,7 @@ namespace MediaPortal.UI.Players.Video
           _aspectRatio.Width = arx;
           _aspectRatio.Height = ary;
 
-          using (Surface surf = Surface.FromPointer(new IntPtr(dwSurface)))
+          using (Surface surf = new Surface(dwSurface))
           {
             SurfaceDescription surfaceDesc = _surface == null ? new SurfaceDescription() : _surface.Description;
             SurfaceDescription surfDesc = surf.Description;

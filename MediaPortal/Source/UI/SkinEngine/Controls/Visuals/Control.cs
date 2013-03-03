@@ -30,11 +30,12 @@ using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.Xaml;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
 using SizeF = System.Drawing.SizeF;
 using MediaPortal.Utilities.DeepCopy;
 using Brush=MediaPortal.UI.SkinEngine.Controls.Brushes.Brush;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {
@@ -284,7 +285,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       {
         SizeF actualSize = new SizeF((float) ActualWidth, (float) ActualHeight);
 
-        RectangleF rect = new RectangleF(ActualPosition.X - 0.5f, ActualPosition.Y - 0.5f,
+        RectangleF rect = SharpDXHelper.CreateRectangleF(ActualPosition.X - 0.5f, ActualPosition.Y - 0.5f,
             actualSize.Width + 0.5f, actualSize.Height + 0.5f);
 
         PositionColoredTextured[] verts = new PositionColoredTextured[6];

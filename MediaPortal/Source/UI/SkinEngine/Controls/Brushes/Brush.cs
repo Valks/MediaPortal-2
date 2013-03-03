@@ -22,15 +22,14 @@
 
 #endregion
 
-using System.Drawing;
 using MediaPortal.Common.General;
 using MediaPortal.UI.SkinEngine.Controls.Transforms;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.Rendering;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
 using MediaPortal.Utilities.DeepCopy;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Brushes
@@ -249,7 +248,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
           {
             Color4 color = ColorConverter.FromColor(Color.White);
             color.Alpha *= (float) Opacity;
-            vert.Color = color.ToArgb();
+            vert.Color = color.ToBgra();
           }
           vert.Tu1 = u;
           vert.Tv1 = v;
@@ -277,7 +276,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
         if (vert.X > maxx) maxx = vert.X;
         if (vert.Y > maxy) maxy = vert.Y;
       }
-      _vertsBounds = new RectangleF(minx, miny, maxx - minx, maxy - miny);
+      _vertsBounds = new RectangleF(minx, miny, maxx, maxy);
       return true;
     }
 
@@ -300,7 +299,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
 
     public bool BeginRenderBrush(PrimitiveBuffer primitiveContext, RenderContext renderContext)
     {
-      if (_vertsBounds.IsEmpty)
+      if (_vertsBounds.IsEmpty())
         return false;
       return BeginRenderBrushOverride(primitiveContext, renderContext);
     }
@@ -309,7 +308,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
 
     public bool BeginRenderOpacityBrush(Texture tex, RenderContext renderContext)
     {
-      if (_vertsBounds.IsEmpty || tex == null)
+      if (_vertsBounds.IsEmpty() || tex == null)
         return false;
       return BeginRenderOpacityBrushOverride(tex, renderContext);
     }

@@ -33,8 +33,9 @@ using MediaPortal.UI.SkinEngine.ContentManagement;
 using MediaPortal.UI.SkinEngine.DirectX.RenderStrategy;
 using MediaPortal.UI.SkinEngine.ScreenManagement;
 using MediaPortal.UI.SkinEngine.Utils;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
+using Color = SharpDX.Color;
 
 namespace MediaPortal.UI.SkinEngine.DirectX
 {
@@ -324,7 +325,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
             _backBuffer = null;
 
             _setup.BuildPresentParamsFromSettings();
-            _device.ResetEx(_setup.PresentParameters);
+            _device.ResetEx(ref _setup.PresentParameters);
 
             SetupRenderStrategies();
 
@@ -512,7 +513,7 @@ namespace MediaPortal.UI.SkinEngine.DirectX
 
         ContentManager.Instance.Clean();
       }
-      catch (Direct3D9Exception e)
+      catch (SharpDXException e)
       {
         DeviceState state = CheckDeviceState();
         ServiceRegistration.Get<ILogger>().Warn("GraphicsDevice: DirectX Exception, DeviceState: {0}", e, state);

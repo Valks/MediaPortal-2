@@ -29,7 +29,8 @@ using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.DirectX.Triangulate;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.Utilities.DeepCopy;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes
 {

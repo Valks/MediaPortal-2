@@ -62,9 +62,11 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SlimDX, Version=2.0.9.42, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\SkinEngine\References\SlimDX.dll</HintPath>
+    <Reference Include="SharpDX">
+      <HintPath>..\..\SkinEngine\References\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D9">
+      <HintPath>..\..\SkinEngine\References\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">

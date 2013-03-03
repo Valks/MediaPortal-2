@@ -28,8 +28,10 @@ using MediaPortal.UI.SkinEngine.Controls.Visuals;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.Utilities.DeepCopy;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
+using Color = SharpDX.Color;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.ImageSources
 {
@@ -71,7 +73,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.ImageSources
 
     void Init()
     {
-      _borderColorProperty = new SProperty(typeof(Color), Color.FromArgb(0, Color.Black));
+      _borderColorProperty = new SProperty(typeof(Color), SharpDXHelper.FromArgb(0, Color.Black));
       _effectProperty = new SProperty(typeof(string), null);
       _effectTimerProperty = new SProperty(typeof(double), 0.0);
     }
@@ -198,7 +200,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.ImageSources
 
       _primitiveBuffer.Set(ref verts, PrimitiveType.TriangleFan);
 
-      _frameSize = skinNeutralAR ? ImageContext.AdjustForSkinAR(ownerRect.Size) : ownerRect.Size;
+      _frameSize = skinNeutralAR ? ImageContext.AdjustForSkinAR(ownerRect.SizeF()) : ownerRect.SizeF();
       _imageContext.FrameSize = _frameSize;
     }
 
@@ -209,7 +211,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.ImageSources
       SizeF rawSourceSize = RawSourceSize;
       SizeF modifiedSourceSize = StretchSource(_imageContext.RotatedFrameSize, rawSourceSize, stretchMode, stretchDirection);
       Vector4 frameData = new Vector4(rawSourceSize.Width, rawSourceSize.Height, (float) EffectTimer, 0);
-      if (_imageContext.StartRender(renderContext, modifiedSourceSize, Texture, TextureClip, BorderColor.ToArgb(), frameData))
+      if (_imageContext.StartRender(renderContext, modifiedSourceSize, Texture, TextureClip, BorderColor.ToBgra(), frameData))
       {
         _primitiveBuffer.Render(0);
         _imageContext.EndRender();

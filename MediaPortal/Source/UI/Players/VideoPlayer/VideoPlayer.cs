@@ -38,10 +38,11 @@ using MediaPortal.UI.Players.Video.Settings;
 using MediaPortal.UI.Players.Video.Tools;
 using MediaPortal.UI.Presentation.Geometries;
 using MediaPortal.UI.Presentation.Players;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Players;
 using MediaPortal.UI.SkinEngine.SkinManagement;
 using MediaPortal.Utilities.Exceptions;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 
 namespace MediaPortal.UI.Players.Video
 {
@@ -180,7 +181,7 @@ namespace MediaPortal.UI.Players.Video
 
       _evr = (IBaseFilter) new EnhancedVideoRenderer();
 
-      IntPtr upDevice = SkinContext.Device.ComPointer;
+      IntPtr upDevice = SkinContext.Device.NativePointer;
       int hr = EvrInit(_evrCallback, (uint) upDevice.ToInt32(), _evr, SkinContext.Form.Handle, out _presenterInstance);
       if (hr != 0)
       {
@@ -275,7 +276,7 @@ namespace MediaPortal.UI.Players.Video
           if (!_textureInvalid)
             return videoSurface;
 
-          if (videoSurface == null || videoSurface.Disposed)
+          if (videoSurface == null || videoSurface.IsDisposed)
             return null;
 
           PostProcessTexture(videoSurface);
@@ -648,12 +649,12 @@ namespace MediaPortal.UI.Players.Video
       return true;
     }
 
-    public Rectangle CropVideoRect
+    public SharpDX.Rectangle CropVideoRect
     {
       get
       {
         Size videoSize = VideoSize;
-        return _cropSettings == null ? new Rectangle(Point.Empty, videoSize) : _cropSettings.CropRect(videoSize);
+        return _cropSettings == null ? SharpDXHelper.CreateRectangle(Point.Empty, videoSize) : _cropSettings.CropRect(videoSize).FromRect();
       }
     }
 

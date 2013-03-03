@@ -30,7 +30,8 @@ using MediaPortal.UI.SkinEngine.Players;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.SkinManagement;
 using MediaPortal.Utilities.DeepCopy;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 using RightAngledRotation = MediaPortal.UI.SkinEngine.Rendering.RightAngledRotation;
 
 namespace MediaPortal.UI.SkinEngine.Controls.ImageSources

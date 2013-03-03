@@ -24,7 +24,7 @@
 
 using System.Drawing;
 using MediaPortal.UI.SkinEngine.ContentManagement.AssetCore;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
 using MediaPortal.UI.SkinEngine.DirectX;
 
 namespace MediaPortal.UI.SkinEngine.ContentManagement

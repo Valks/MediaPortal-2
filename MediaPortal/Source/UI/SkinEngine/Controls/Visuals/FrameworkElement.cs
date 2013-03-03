@@ -44,11 +44,14 @@ using MediaPortal.UI.SkinEngine.MpfElements.Resources;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.ScreenManagement;
 using MediaPortal.UI.SkinEngine.Xaml.Interfaces;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
 using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Styles;
 using MediaPortal.Utilities.DeepCopy;
+using Color = SharpDX.Color;
+using Rectangle = SharpDX.Rectangle;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {
@@ -1477,8 +1480,8 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       _finalTransform = null;
       _inverseFinalTransform = null;
 
-      _outerRect = new RectangleF(outerRect.Location, outerRect.Size);
-      RectangleF rect = new RectangleF(outerRect.Location, outerRect.Size);
+      _outerRect = SharpDXHelper.CreateRectangleF(outerRect.Location(), outerRect.SizeF());
+      RectangleF rect = SharpDXHelper.CreateRectangleF(outerRect.Location(), outerRect.SizeF());
       RemoveMargin(ref rect, Margin);
 
       if (LayoutTransform != null)
@@ -1491,10 +1494,10 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
           layoutTransform.TransformIncludingRectangleSize(ref resultOuterSize);
           if (resultOuterSize.Width > rect.Width + DELTA_DOUBLE || resultOuterSize.Height > rect.Height + DELTA_DOUBLE)
             // Transformation of desired size doesn't fit into the available rect
-            resultInnerSize = FindMaxTransformedSize(layoutTransform, rect.Size);
-          rect = new RectangleF(
-              rect.Location.X + (rect.Width - resultInnerSize.Width) / 2,
-              rect.Location.Y + (rect.Height - resultInnerSize.Height) / 2,
+            resultInnerSize = FindMaxTransformedSize(layoutTransform, rect.SizeF());
+          rect = SharpDXHelper.CreateRectangleF(
+              rect.X + (rect.Width - resultInnerSize.Width) / 2,
+              rect.Y + (rect.Height - resultInnerSize.Height) / 2,
               resultInnerSize.Width,
               resultInnerSize.Height);
         }
@@ -1510,7 +1513,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 
     protected virtual void ArrangeOverride()
     {
-      ActualPosition = _innerRect.Location;
+      ActualPosition = _innerRect.Location();
       ActualWidth = _innerRect.Width;
       ActualHeight = _innerRect.Height;
     }
@@ -1665,7 +1668,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 #endif
 #endif
       // Ignore the measured size - arrange with screen size
-      Arrange(new RectangleF(new PointF(0, 0), skinSize));
+      Arrange(SharpDXHelper.CreateRectangleF(new PointF(0, 0), skinSize));
     }
 
     #endregion
@@ -1777,7 +1780,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
         GraphicsDevice.Device.SetRenderTarget(0, renderSurface);
 
         // Fill the background of the texture with an alpha value of 0
-        GraphicsDevice.Device.Clear(ClearFlags.Target, Color.FromArgb(0, Color.Black), 1.0f, 0);
+        GraphicsDevice.Device.Clear(ClearFlags.Target, SharpDXHelper.FromArgb(0, Color.Black), 1.0f, 0);
 
         // Render the control into the given texture
         RenderOverride(renderContext);
@@ -1792,7 +1795,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 
     private static RectangleF CalculateBoundingBox(RectangleF rectangle, Matrix transformation)
     {
-      PointF tl = rectangle.Location;
+      PointF tl = rectangle.Location();
       PointF tr = new PointF(rectangle.Right, rectangle.Top);
       PointF bl = new PointF(rectangle.Left, rectangle.Bottom);
       PointF br = new PointF(rectangle.Right, rectangle.Bottom);
@@ -1806,7 +1809,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       PointF rbr = new PointF(
           Math.Max(tl.X, Math.Max(tr.X, Math.Max(bl.X, br.X))),
           Math.Max(tl.Y, Math.Max(tr.Y, Math.Max(bl.Y, br.Y))));
-      return new RectangleF(rtl, new SizeF(rbr.X - rtl.X, rbr.Y - rtl.Y));
+      return SharpDXHelper.CreateRectangleF(rtl, new SizeF(rbr.X - rtl.X, rbr.Y - rtl.Y));
     }
 
     private RenderContext ExtortRenderContext()
@@ -1900,8 +1903,8 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 
           // Unfortunately, brushes/brush effects are based on textures and cannot work with surfaces, so we need this additional copy step
           GraphicsDevice.Device.StretchRectangle(
-              renderSurface.Surface,  new Rectangle(Point.Empty, renderSurface.Size),
-              renderTexture.Surface0, new Rectangle(Point.Empty, renderTexture.Size),
+              renderSurface.Surface, SharpDXHelper.CreateRectangle(Point.Empty, renderSurface.Size),
+              renderTexture.Surface0, SharpDXHelper.CreateRectangle(Point.Empty, renderTexture.Size),
               TextureFilter.None);
         }
         else
@@ -1915,10 +1918,10 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
         {
           const float OPACITY_MASK_BOUNDS = 0.9f;
           RectangleF occupiedTransformedBounds = tempRenderContext.OccupiedTransformedBounds;
-          occupiedTransformedBounds.X -= OPACITY_MASK_BOUNDS;
-          occupiedTransformedBounds.Y -= OPACITY_MASK_BOUNDS;
-          occupiedTransformedBounds.Width += OPACITY_MASK_BOUNDS * 2;
-          occupiedTransformedBounds.Height += OPACITY_MASK_BOUNDS * 2;
+          occupiedTransformedBounds.Left -= OPACITY_MASK_BOUNDS;
+          occupiedTransformedBounds.Top -= OPACITY_MASK_BOUNDS;
+          occupiedTransformedBounds.Right += OPACITY_MASK_BOUNDS;
+          occupiedTransformedBounds.Bottom += OPACITY_MASK_BOUNDS;
 
           // If the control bounds have changed we need to update our primitive context to make the 
           // texture coordinates match up
@@ -1962,7 +1965,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     {
       Color4 col = ColorConverter.FromColor(Color.White);
       col.Alpha *= (float) Opacity;
-      int color = col.ToArgb();
+      int color = col.ToBgra();
 
       PositionColoredTextured[] verts = PositionColoredTextured.CreateQuad_Fan(
           bounds.Left - 0.5f, bounds.Top - 0.5f, bounds.Right - 0.5f, bounds.Bottom - 0.5f,
@@ -1979,7 +1982,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     {
       Color4 col = ColorConverter.FromColor(Color.White);
       col.Alpha *= (float) Opacity;
-      int color = col.ToArgb();
+      int color = col.ToBgra();
 
       PositionColoredTextured[] verts = PositionColoredTextured.CreateQuad_Fan(
           bounds.Left - 0.5f, bounds.Top - 0.5f, bounds.Right - 0.5f, bounds.Bottom - 0.5f,

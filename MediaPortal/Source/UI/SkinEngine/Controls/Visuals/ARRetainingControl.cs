@@ -25,8 +25,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using MediaPortal.Common.General;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.Utilities.DeepCopy;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 {
@@ -120,9 +122,9 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       if (content != null)
       {
         PointF position = new PointF(_innerRect.X, _innerRect.Y);
-        SizeF availableSize = CalculateInnerDesiredSize(_innerRect.Size);
+        SizeF availableSize = CalculateInnerDesiredSize(_innerRect.SizeF());
         ArrangeChild(content, content.HorizontalAlignment, content.VerticalAlignment, ref position, ref availableSize);
-        RectangleF childRect = new RectangleF(position, availableSize);
+        RectangleF childRect = SharpDXHelper.CreateRectangleF(position, availableSize);
         content.Arrange(childRect);
       }
     }

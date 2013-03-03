@@ -37,13 +37,15 @@ using MediaPortal.UI.SkinEngine.Controls.Panels;
 using MediaPortal.UI.SkinEngine.Controls.Transforms;
 using MediaPortal.UI.SkinEngine.Controls.Visuals;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Styles;
+using MediaPortal.UI.SkinEngine.DirectX;
 using MediaPortal.UI.SkinEngine.MpfElements.Resources;
 using MediaPortal.UI.SkinEngine.Xaml.Interfaces;
 using MediaPortal.Utilities;
-using SlimDX;
+using SharpDX;
 using TypeConverter = MediaPortal.UI.SkinEngine.Xaml.TypeConverter;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Shapes;
 using Brush=MediaPortal.UI.SkinEngine.Controls.Brushes.Brush;
+using Color = SharpDX.Color;
 
 namespace MediaPortal.UI.SkinEngine.MpfElements
 {                            
@@ -338,12 +340,16 @@ namespace MediaPortal.UI.SkinEngine.MpfElements
         result = t;
         return true;
       }
+      else if (targetType == typeof(Color) && value is string)
+      {
+        result = SharpDXHelper.ToColor(value.ToString());
+        return true;
+      }
       else if (targetType == typeof(Brush) && value is string || value is Color)
       {
         try
         {
-          Color color = value is Color ? (Color) value : (Color)
-              TypeDescriptor.GetConverter(typeof(Color)).ConvertFromString(value.ToString());
+          Color color = value is Color? (Color) value : SharpDXHelper.ToColor(value.ToString());
           SolidColorBrush b = new SolidColorBrush
             {
                 Color = color

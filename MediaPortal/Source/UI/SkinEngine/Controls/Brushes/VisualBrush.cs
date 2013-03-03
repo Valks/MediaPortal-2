@@ -32,8 +32,8 @@ using MediaPortal.UI.SkinEngine.MpfElements;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.ScreenManagement;
 using MediaPortal.Utilities.DeepCopy;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Brushes
 {
@@ -108,12 +108,12 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
 
     void UpdateRenderTarget(FrameworkElement fe)
     {
-      fe.RenderToSurface(_visualSurface, new RenderContext(Matrix.Identity, Opacity, new RectangleF(new PointF(0.0f, 0.0f), _vertsBounds.Size), 1.0f));
+      fe.RenderToSurface(_visualSurface, new RenderContext(Matrix.Identity, Opacity, SharpDXHelper.CreateRectangleF(PointF.Empty, _vertsBounds.SizeF()), 1.0f));
 
       // Unfortunately, brushes/brush effects are based on textures and cannot work with surfaces, so we need this additional copy step
       GraphicsDevice.Device.StretchRectangle(
-          _visualSurface.Surface, new Rectangle(Point.Empty, _visualSurface.Size),
-          _visualTexture.Surface0, new Rectangle(Point.Empty,  _visualTexture.Size),
+          _visualSurface.Surface, SharpDXHelper.CreateRectangle(Point.Empty, _visualSurface.Size),
+          _visualTexture.Surface0, SharpDXHelper.CreateRectangle(Point.Empty, _visualTexture.Size),
           TextureFilter.None);
     }
 
@@ -138,9 +138,9 @@ namespace MediaPortal.UI.SkinEngine.Controls.Brushes
           visual.SetElementState(ElementState.Running);
         // Here is _screen != null, which means we are allocated
         visual.Allocate();
-        SizeF size = _vertsBounds.Size;
+        SizeF size = _vertsBounds.SizeF();
         visual.Measure(ref size);
-        visual.Arrange(new RectangleF(new PointF(0, 0), _vertsBounds.Size));
+        visual.Arrange(SharpDXHelper.CreateRectangleF(PointF.Empty, _vertsBounds.SizeF()));
       }
       _preparedVisual = visual;
     }

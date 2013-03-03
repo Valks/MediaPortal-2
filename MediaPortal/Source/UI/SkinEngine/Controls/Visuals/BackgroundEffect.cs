@@ -22,11 +22,10 @@
 
 #endregion
 
-using System.Drawing;
 using MediaPortal.UI.SkinEngine.Rendering;
 using MediaPortal.UI.SkinEngine.SkinManagement;
-using SlimDX;
-using SlimDX.Direct3D9;
+using SharpDX;
+using SharpDX.Direct3D9;
 using Effect = MediaPortal.UI.SkinEngine.Controls.Visuals.Effects.Effect;
 
 namespace MediaPortal.UI.SkinEngine.Controls.Visuals

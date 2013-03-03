@@ -27,7 +27,8 @@ using System.Drawing;
 using System.Security.Cryptography;
 using MediaPortal.UI.SkinEngine.ContentManagement;
 using MediaPortal.UI.SkinEngine.Rendering;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Controls.ImageSources
 {

@@ -24,7 +24,8 @@
 
 using System.Drawing;
 using MediaPortal.UI.Presentation.Players;
-using SlimDX.Direct3D9;
+using SharpDX.Direct3D9;
+using RectangleF = SharpDX.RectangleF;
 
 namespace MediaPortal.UI.SkinEngine.Players
 {
