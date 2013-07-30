@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include
+    xmlns="www.team-mediaportal.com/2008/mpf/directx"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Source="screens\master_menu.xaml"
+    >
+  <Include.Resources>
+
+    <Model x:Key="EditPlaylistModel" Id="0AFD5E3A-2CB6-44d6-827F-72A7193595E2"/>
+
+    <ResourceWrapper x:Key="Header_Text" EnableBindings="True"
+        Resource="{Binding Source={StaticResource EditPlaylistModel},Path=PlaylistHeader,Mode=OneTime}"/>
+
+    <!-- Contents -->
+    <ControlTemplate x:Key="Contents_Template">
+      <Grid DataContext="{Binding Source={StaticResource EditPlaylistModel}}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Bottom" LastChildFill="false">
+          <StackPanel Margin="10,0,10,0" Orientation="Horizontal" DockPanel.Dock="Right">
+            <Label Color="{ThemeResource HintTextColor}" Content="(" FontSize="{ThemeResource SmallerFontSize}"/>
+            <Label Color="{ThemeResource HintTextColor}" Content="{Binding NumPlaylistItemsStr}" FontSize="{ThemeResource SmallerFontSize}"/>
+            <Label Color="{ThemeResource HintTextColor}" Content=")" FontSize="{ThemeResource SmallerFontSize}"/>
+          </StackPanel>
+        </DockPanel>
+        <Grid Grid.Column="0" Grid.Row="1"
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <ListView Grid.Column="0" Grid.Row="0" Style="{ThemeResource EditPlaylistListViewStyle}"
+              ItemsSource="{Binding Items}">
+            <ListView.Resources>
+              <Command x:Key="MoveUp_Command" Source="{StaticResource EditPlaylistModel}" Path="MoveUp"
+                  Parameters="{LateBoundValue BindingValue={Binding}}"/>
+              <Command x:Key="MoveDown_Command" Source="{StaticResource EditPlaylistModel}" Path="MoveDown"
+                  Parameters="{LateBoundValue BindingValue={Binding}}"/>
+              <Command x:Key="Remove_Command" Source="{StaticResource EditPlaylistModel}" Path="Remove"
+                  Parameters="{LateBoundValue BindingValue={Binding}}"/>
+            </ListView.Resources>
+          </ListView>
+          <Label Grid.Column="0" Grid.Row="0" IsVisible="{Binding IsPlaylistEmpty}"
+              HorizontalAlignment="Center" VerticalAlignment="Center"
+              Content="[Media.PlaylistEmpty]" Color="{ThemeResource HintTextColor}"/>
+        </Grid>
+      </Grid>
+    </ControlTemplate>
+
+  </Include.Resources>
+</Include>
