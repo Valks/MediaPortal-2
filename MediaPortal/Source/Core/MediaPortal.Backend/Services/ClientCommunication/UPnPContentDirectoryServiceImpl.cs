@@ -96,12 +96,20 @@ namespace MediaPortal.Backend.Services.ClientCommunication
           };
       AddStateVariable(A_ARG_TYPE_SystemId);
 
+      // Used for several parameters
+      DvStateVariable A_ARG_TYPE_Index = new DvStateVariable("A_ARG_TYPE_Index", new DvStandardDataType(UPnPStandardDataType.Ui4))
+      {
+        SendEvents = false
+      }; // Is int sufficent here?
+
       // Used for several parameters and result values
-      DvStateVariable A_ARG_TYPE_Count = new DvStateVariable("A_ARG_TYPE_Count", new DvStandardDataType(UPnPStandardDataType.Int))
+      DvStateVariable A_ARG_TYPE_Count = new DvStateVariable("A_ARG_TYPE_Count", new DvStandardDataType(UPnPStandardDataType.Ui4))
           {
             SendEvents = false
           }; // Is int sufficient here?
       AddStateVariable(A_ARG_TYPE_Count);
+
+      DvStateVariable A_ARG_TYPE_UpdateID = new DvStateVariable("A_ARG_TYPE_UpdateID", new DvStandardDataType(UPnPStandardDataType.Ui4));
 
       // Used to transport a resource path expression
       DvStateVariable A_ARG_TYPE_ResourcePath = new DvStateVariable("A_ARG_TYPE_ResourcePath", new DvStandardDataType(UPnPStandardDataType.String))
@@ -427,9 +435,14 @@ namespace MediaPortal.Backend.Services.ClientCommunication
             new DvArgument("ParentDirectory", A_ARG_TYPE_Uuid, ArgumentDirection.In),
             new DvArgument("NecessaryMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
             new DvArgument("OptionalMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
+            new DvArgument("StartIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
+            new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
           },
           new DvArgument[] {
             new DvArgument("MediaItems", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true),
+            new DvArgument("NumberReturned", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+            new DvArgument("TotalMatches", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+            new DvArgument("UpdateID", A_ARG_TYPE_UpdateID, ArgumentDirection.Out, true), 
           });
       AddAction(browseAction);
 
@@ -437,9 +450,14 @@ namespace MediaPortal.Backend.Services.ClientCommunication
           new DvArgument[] {
             new DvArgument("Query", A_ARG_TYPE_MediaItemQuery, ArgumentDirection.In),
             new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
+            new DvArgument("StartIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
+            new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
           },
           new DvArgument[] {
             new DvArgument("MediaItems", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true),
+            new DvArgument("NumberReturned", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+            new DvArgument("TotalMatches", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+            new DvArgument("UpdateID", A_ARG_TYPE_UpdateID, ArgumentDirection.Out, true), 
           });
       AddAction(searchAction);
 
@@ -452,9 +470,14 @@ namespace MediaPortal.Backend.Services.ClientCommunication
             new DvArgument("SearchMode", A_ARG_TYPE_TextSearchMode, ArgumentDirection.In),
             new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
             new DvArgument("CapitalizationMode", A_ARG_TYPE_CapitalizationMode, ArgumentDirection.In),
+            new DvArgument("StartIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
+            new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
           },
           new DvArgument[] {
             new DvArgument("MediaItems", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true),
+            new DvArgument("NumberReturned", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+            new DvArgument("TotalMatches", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+            new DvArgument("UpdateID", A_ARG_TYPE_UpdateID, ArgumentDirection.Out, true), 
           });
       AddAction(textSearchAction);
 
@@ -908,9 +931,15 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       Guid parentDirectoryId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
       IEnumerable<Guid> necessaryMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[1]);
       IEnumerable<Guid> optionalMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[2]);
-      ICollection<MediaItem> result = ServiceRegistration.Get<IMediaLibrary>().Browse(parentDirectoryId, necessaryMIATypes, optionalMIATypes);
+      IList<MediaItem> result = ServiceRegistration.Get<IMediaLibrary>().Browse(parentDirectoryId, necessaryMIATypes, optionalMIATypes, (int)inParams[3], (int)inParams[4]);
 
-      outParams = new List<object> {result};
+      outParams = new List<object>
+      {
+        result,       // Result
+        null,         // NumberReturned
+        result.Count, // TotalMatches
+        null          // UpdateID
+      };
       return null;
     }
 
@@ -919,6 +948,24 @@ namespace MediaPortal.Backend.Services.ClientCommunication
     {
       MediaItemQuery query = (MediaItemQuery) inParams[0];
       string onlineStateStr = (string) inParams[1];
+      if (inParams.Count >= 5)
+      {
+        if (query.Filter == null)
+          query.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
+          {
+            new TakeFilter(null, inParams[3]),
+            new SkipFilter(null, inParams[4]), 
+          });
+        else
+        {
+          query.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
+          {
+            query.Filter,
+            new TakeFilter(null, inParams[3]),
+            new SkipFilter(null, inParams[4]), 
+          });
+        }
+      }
       bool all;
       UPnPError error = ParseOnlineState("OnlineState", onlineStateStr, out all);
       if (error != null)
@@ -927,7 +974,13 @@ namespace MediaPortal.Backend.Services.ClientCommunication
         return error;
       }
       IList<MediaItem> mediaItems = ServiceRegistration.Get<IMediaLibrary>().Search(query, !all);
-      outParams = new List<object> {mediaItems};
+      outParams = new List<object>
+      {
+        mediaItems,       // Result
+        null,             // NumberReturned
+        mediaItems.Count, // TotalMatches
+        null              // UpdateID
+      };
       return null;
     }
 

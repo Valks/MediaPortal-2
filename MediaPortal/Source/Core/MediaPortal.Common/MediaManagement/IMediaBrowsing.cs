@@ -47,9 +47,11 @@ namespace MediaPortal.Common.MediaManagement
     /// <param name="parentDirectoryId">Id of the directory whose contents should be loaded.</param>
     /// <param name="necessaryRequestedMIATypeIDs">Necessary MIA ids the returned items must support.</param>
     /// <param name="optionalRequestedMIATypeIDs">Optional MIA ids the returned items can support.</param>
+    /// <param name="startingIndex">Starting index to retrieve <see cref="MediaItem"/>.</param>
+    /// <param name="requestedCount">Number of <see cref="MediaItem"/> to retrieve.</param>
     /// <returns>Collection of media items.</returns>
     /// <exception cref="DisconnectedException">If the connection to the media library was disconnected.</exception>
-    ICollection<MediaItem> Browse(Guid parentDirectoryId, IEnumerable<Guid> necessaryRequestedMIATypeIDs,
+    IList<MediaItem> Browse(Guid parentDirectoryId, IEnumerable<Guid> necessaryRequestedMIATypeIDs,
         IEnumerable<Guid> optionalRequestedMIATypeIDs);
   }
 }

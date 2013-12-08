@@ -138,7 +138,7 @@ namespace MediaPortal.Backend.Services.MediaLibrary.QueryEngine
       }
 
       return new CompiledMediaItemQuery(miaManagement, necessaryMIATypes, optionalMIATypes,
-          mainSelectedAttributes, explicitSelectAttributes, query.Filter, query.SortInformation);
+        mainSelectedAttributes, explicitSelectAttributes, query.Filter, query.SortInformation);
     }
 
     public IList<MediaItem> QueryList()

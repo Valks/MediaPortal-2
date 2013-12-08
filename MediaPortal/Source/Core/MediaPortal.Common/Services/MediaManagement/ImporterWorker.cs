@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using MediaPortal.Common.Logging;
@@ -32,12 +33,14 @@ using MediaPortal.Common.MediaManagement.DefaultItemAspects;
 using MediaPortal.Common.ResourceAccess;
 using MediaPortal.Common.Messaging;
 using MediaPortal.Common.Runtime;
+using MediaPortal.Common.Services.ServerCommunication;
 using MediaPortal.Common.Services.Settings;
 using MediaPortal.Common.Settings;
 using MediaPortal.Common.SystemResolver;
 using MediaPortal.Common.TaskScheduler;
 using MediaPortal.Utilities;
 using MediaPortal.Utilities.Exceptions;
+using Okra.Data;
 
 namespace MediaPortal.Common.Services.MediaManagement
 {
@@ -468,8 +471,18 @@ namespace MediaPortal.Common.Services.MediaManagement
         IDictionary<string, MediaItem> path2Item = new Dictionary<string, MediaItem>();
         if (importJob.JobType == ImportJobType.Refresh)
         {
-          foreach (MediaItem mediaItem in mediaBrowsing.Browse(directoryId,
-              IMPORTER_PROVIDER_MIA_ID_ENUMERATION, EMPTY_MIA_ID_ENUMERATION))
+          //IList<MediaItem> dataSource = new VirtualizingDataList<MediaItem>(new GenericPagedDataListSource<MediaItem>((page, pageSize) =>
+          //{
+          //  var result = mediaBrowsing.Browse(directoryId,
+          //    IMPORTER_PROVIDER_MIA_ID_ENUMERATION, EMPTY_MIA_ID_ENUMERATION,
+          //    page * pageSize, pageSize);
+
+          //  return new DataListPageResult<MediaItem>(null, pageSize, page, result);
+          //}, null));
+
+          //foreach (MediaItem mediaItem in dataSource)
+          foreach (var mediaItem in mediaBrowsing.Browse(directoryId,
+            IMPORTER_PROVIDER_MIA_ID_ENUMERATION, EMPTY_MIA_ID_ENUMERATION))
           {
             MediaItemAspect providerResourceAspect;
             if (mediaItem.Aspects.TryGetValue(ProviderResourceAspect.ASPECT_ID, out providerResourceAspect))

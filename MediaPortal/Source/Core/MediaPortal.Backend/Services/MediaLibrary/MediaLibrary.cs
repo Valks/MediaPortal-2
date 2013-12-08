@@ -45,6 +45,7 @@ using MediaPortal.Common.SystemResolver;
 using MediaPortal.Utilities;
 using MediaPortal.Utilities.DB;
 using MediaPortal.Utilities.Exceptions;
+using Okra.Data;
 using RelocationMode=MediaPortal.Backend.MediaLibrary.RelocationMode;
 
 namespace MediaPortal.Backend.Services.MediaLibrary
@@ -77,12 +78,18 @@ namespace MediaPortal.Backend.Services.MediaLibrary
         }
       }
 
-      public ICollection<MediaItem> Browse(Guid parentDirectoryId,
-          IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs)
+      public IList<MediaItem> Browse(Guid parentDirectoryId,
+        IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs)
       {
         try
         {
-          return _parent.Browse(parentDirectoryId, necessaryRequestedMIATypeIDs, optionalRequestedMIATypeIDs);
+          return new VirtualizingDataList<MediaItem>(new GenericPagedDataListSource<MediaItem>((page, pageSize) =>
+          {
+            var result = _parent.Browse(parentDirectoryId, necessaryRequestedMIATypeIDs, optionalRequestedMIATypeIDs,
+              page * pageSize, pageSize);
+
+            return new DataListPageResult<MediaItem>(null, pageSize, page, result);
+          }, null));
         }
         catch (Exception)
         {
@@ -511,14 +518,32 @@ namespace MediaPortal.Backend.Services.MediaLibrary
       }
     }
 
-    public ICollection<MediaItem> Browse(Guid parentDirectoryId,
-        IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs)
+    public IList<MediaItem> Browse(Guid parentDirectoryId,
+        IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs,
+      int? startingIndex, int? requestedCount)
     {
       lock (_syncObj)
       {
         MediaItemQuery browseQuery = BuildBrowseQuery(parentDirectoryId);
         browseQuery.SetNecessaryRequestedMIATypeIDs(necessaryRequestedMIATypeIDs);
         browseQuery.SetOptionalRequestedMIATypeIDs(optionalRequestedMIATypeIDs);
+        if (browseQuery.Filter == null)
+        {
+          browseQuery.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
+          {
+            new TakeFilter(null, requestedCount ?? -1), 
+            new SkipFilter(null, startingIndex ?? 0),
+          });
+        }
+        else
+        {
+          browseQuery.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
+          {
+            browseQuery.Filter,
+            new TakeFilter(null, requestedCount ?? -1), 
+            new SkipFilter(null, startingIndex ?? 0), 
+          });
+        }
         return Search(browseQuery, false);
       }
     }

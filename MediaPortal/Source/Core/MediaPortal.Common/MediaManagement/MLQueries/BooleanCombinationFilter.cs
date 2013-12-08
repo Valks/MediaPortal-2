@@ -112,6 +112,8 @@ namespace MediaPortal.Common.MediaManagement.MLQueries
     [XmlArrayItem("Empty", typeof(EmptyFilter))]
     [XmlArrayItem("False", typeof(FalseFilter))]
     [XmlArrayItem("MediaItemIds", typeof(MediaItemIdFilter))]
+    [XmlArrayItem("Skip", typeof(SkipFilter))]
+    [XmlArrayItem("Take", typeof(TakeFilter))]
     // Necessary to have an object ARRAY here, else the serialization algorithm cannot cope with polymorph values
     public object[] XML_Operands
     {

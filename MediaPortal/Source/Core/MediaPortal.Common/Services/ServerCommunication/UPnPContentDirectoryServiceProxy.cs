@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MediaPortal.Common.General;
@@ -33,6 +34,7 @@ using MediaPortal.Common.SystemCommunication;
 using MediaPortal.Common.UPnP;
 using MediaPortal.Utilities;
 using MediaPortal.Utilities.UPnP;
+using Okra.Data;
 using UPnP.Infrastructure.CP.DeviceTree;
 
 namespace MediaPortal.Common.Services.ServerCommunication
@@ -274,39 +276,84 @@ namespace MediaPortal.Common.Services.ServerCommunication
       return (MediaItem) outParameters[0];
     }
 
-    public ICollection<MediaItem> Browse(Guid parentDirectory,
-        IEnumerable<Guid> necessaryMIATypes, IEnumerable<Guid> optionalMIATypes)
+    public IList<MediaItem> Browse(Guid parentDirectory,
+      IEnumerable<Guid> necessaryMIATypes, IEnumerable<Guid> optionalMIATypes)
     {
-      CpAction action = GetAction("Browse");
-      IList<object> inParameters = new List<object> {MarshallingHelper.SerializeGuid(parentDirectory),
+      return new VirtualizingDataList<MediaItem>(new UPnPContentDirectoryPagedDataSource<MediaItem>((page, pageSize) =>
+      {
+        CpAction action = GetAction("Browse");
+        IList<object> inParameters = new List<object>
+        {
+          MarshallingHelper.SerializeGuid(parentDirectory),
           MarshallingHelper.SerializeGuidEnumerationToCsv(necessaryMIATypes),
-          MarshallingHelper.SerializeGuidEnumerationToCsv(optionalMIATypes)};
-      IList<object> outParameters = action.InvokeAction(inParameters);
-      return (ICollection<MediaItem>) outParameters[0];
+          MarshallingHelper.SerializeGuidEnumerationToCsv(optionalMIATypes),
+          page * pageSize,
+          pageSize
+        };
+
+        IList<object> outParameters = action.InvokeAction(inParameters);
+        return new UPnPContentDirectoryRequestResult<MediaItem>(
+          (IList<MediaItem>)outParameters[0],
+          (int)outParameters[2],
+          (int)outParameters[1],
+          (uint)outParameters[3]);
+      }, null));
     }
 
     public IList<MediaItem> Search(MediaItemQuery query, bool onlyOnline)
     {
-      CpAction action = GetAction("Search");
-      String onlineStateStr = SerializeOnlineState(onlyOnline);
-      IList<object> inParameters = new List<object> {query, onlineStateStr};
-      IList<object> outParameters = action.InvokeAction(inParameters);
-      return (IList<MediaItem>) outParameters[0];
+      return new VirtualizingDataList<MediaItem>(new UPnPContentDirectoryPagedDataSource<MediaItem>((page, pageSize) =>
+      {
+        CpAction action = GetAction("Search");
+        String onlineStateStr = SerializeOnlineState(onlyOnline);
+        // 2.7.5.1 Search Arguments
+        // Note: Might be missing Filter before StartingIndex
+        // TODO: Validate CountMediaItems is working correctly.
+        IList<object> inParameters = new List<object>
+        {
+          query,
+          onlineStateStr,
+          null,
+          page * pageSize,
+          pageSize
+        };
+
+        IList<object> outParameters = action.InvokeAction(inParameters);
+        return new UPnPContentDirectoryRequestResult<MediaItem>(
+          (IList<MediaItem>)outParameters[0],
+          (int)outParameters[2],
+          (int)outParameters[1],
+          (uint)outParameters[3]);
+      }, null));
     }
 
     public IList<MediaItem> SimpleTextSearch(string searchText, IEnumerable<Guid> necessaryMIATypes,
-        IEnumerable<Guid> optionalMIATypes, IFilter filter, bool excludeCLOBs, bool onlyOnline, bool caseSensitive)
+      IEnumerable<Guid> optionalMIATypes, IFilter filter, bool excludeCLOBs, bool onlyOnline, bool caseSensitive)
     {
-      CpAction action = GetAction("SimpleTextSearch");
-      String searchModeStr = SerializeExcludeClobs(excludeCLOBs);
-      String onlineStateStr = SerializeOnlineState(onlyOnline);
-      String capitalizationMode = SerializeCapitalizationMode(caseSensitive);
-      IList<object> inParameters = new List<object> {searchText,
+      return new VirtualizingDataList<MediaItem>(new UPnPContentDirectoryPagedDataSource<MediaItem>((page, pageSize) =>
+      {
+        CpAction action = GetAction("SimpleTextSearch");
+        String searchModeStr = SerializeExcludeClobs(excludeCLOBs);
+        String onlineStateStr = SerializeOnlineState(onlyOnline);
+        String capitalizationMode = SerializeCapitalizationMode(caseSensitive);
+        // No idea as I can't find the action definition for SimpleTextSearch and I can't find a reference in the documentation which matches.
+        // Taking a guess that StartIndex and Count follow after for the inParameters (wish they were named).
+        IList<object> inParameters = new List<object>
+        {
+          searchText,
           MarshallingHelper.SerializeGuidEnumerationToCsv(necessaryMIATypes),
           MarshallingHelper.SerializeGuidEnumerationToCsv(optionalMIATypes),
-          filter, searchModeStr, onlineStateStr, capitalizationMode};
-      IList<object> outParameters = action.InvokeAction(inParameters);
-      return (IList<MediaItem>) outParameters[0];
+          filter, searchModeStr, onlineStateStr, capitalizationMode,
+          page * pageSize,
+          pageSize
+        };
+        IList<object> outParameters = action.InvokeAction(inParameters);
+        return new UPnPContentDirectoryRequestResult<MediaItem>(
+          (IList<MediaItem>)outParameters[0],
+          (int)outParameters[2],
+          (int)outParameters[1],
+          (uint)outParameters[3]);
+      }, null));
     }
 
     public HomogenousMap GetValueGroups(MediaItemAspectMetadata.AttributeSpecification attributeType, IFilter selectAttributeFilter,

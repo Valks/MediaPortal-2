@@ -77,8 +77,8 @@ namespace MediaPortal.UI.Services.ServerCommunication
         }
       }
 
-      public ICollection<MediaItem> Browse(Guid parentDirectoryId,
-          IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs)
+      public IList<MediaItem> Browse(Guid parentDirectoryId,
+        IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs)
       {
         try
         {

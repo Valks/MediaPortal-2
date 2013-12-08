@@ -114,9 +114,12 @@ namespace MediaPortal.Backend.MediaLibrary
     /// <param name="necessaryRequestedMIATypeIDs">IDs of media item aspect types which need to be present in the result.
     /// If a media item at the given location doesn't contain one of those media item aspects, it won't be returned.</param>
     /// <param name="optionalRequestedMIATypeIDs">IDs of media item aspect types which will be returned if present.</param>
+    /// <param name="startingIndex">Index of the first <see cref="MediaItem"/> to return.</param>
+    /// <param name="requestedCount">Number of <see cref="MediaItem"/> to return.</param>
     /// <returns>Result collection of media items at the given location.</returns>
-    ICollection<MediaItem> Browse(Guid parentDirectoryId,
-        IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs);
+    IList<MediaItem> Browse(Guid parentDirectoryId,
+        IEnumerable<Guid> necessaryRequestedMIATypeIDs, IEnumerable<Guid> optionalRequestedMIATypeIDs,
+      int? startingIndex, int? requestedCount);
 
     /// <summary>
     /// Starts a search for media items.
