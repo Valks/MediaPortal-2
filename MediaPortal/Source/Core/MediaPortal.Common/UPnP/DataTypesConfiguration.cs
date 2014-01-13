@@ -26,6 +26,6 @@ namespace MediaPortal.Common.UPnP
 {
   public class DataTypesConfiguration
   {
-    public const string DATATYPES_SCHEMA_URI = "urn:team-mediaportal-com:MP2-UPnP";
+    public const string DATATYPES_SCHEMA_URI = "urn:schemas-upnp-org:service";
   }
 }

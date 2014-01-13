@@ -9,12 +9,11 @@ namespace MediaPortal.Common.MediaManagement.MLQueries
   /// <summary>
   /// Specifies an expression which skips a given number of media items.
   /// </summary>
-  public class SkipFilter : AbstractAttributeFilter
+  public class SkipFilter : IFilter
   {
     protected object _value1;
 
-    public SkipFilter(MediaItemAspectMetadata.AttributeSpecification attributeType,
-      object value1) : base(attributeType)
+    public SkipFilter(object value1)
     {
       _value1 = value1;
     }
@@ -28,7 +27,7 @@ namespace MediaPortal.Common.MediaManagement.MLQueries
 
     public override string ToString()
     {
-      return AttributeTypeToString() + " OFFSET " + _value1;
+      return " OFFSET " + _value1;
     }
 
     #region Additional members for the XML serialization

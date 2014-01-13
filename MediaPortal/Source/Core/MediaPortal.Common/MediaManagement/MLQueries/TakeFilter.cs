@@ -9,12 +9,11 @@ namespace MediaPortal.Common.MediaManagement.MLQueries
   /// <summary>
   /// Specifies an expression which skips a given number of media items.
   /// </summary>
-  public class TakeFilter : AbstractAttributeFilter
+  public class TakeFilter : IFilter
   {
     protected object _value1;
 
-    public TakeFilter(MediaItemAspectMetadata.AttributeSpecification attributeType,
-      object value1) : base(attributeType)
+    public TakeFilter(object value1)
     {
       _value1 = value1;
     }
@@ -28,7 +27,7 @@ namespace MediaPortal.Common.MediaManagement.MLQueries
 
     public override string ToString()
     {
-      return AttributeTypeToString() + " LIMIT " + _value1;
+      return " LIMIT " + _value1;
     }
 
     #region Additional members for the XML serialization

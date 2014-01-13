@@ -72,7 +72,7 @@ namespace MediaPortal.UiComponents.Media.Views.RemovableMediaDrives
     /// <summary>
     /// Returns all media items of the root and recursively of all view specifications of this drive.
     /// </summary>
-    /// <returns>Enumeration of media items.</returns>
-    IEnumerable<MediaItem> GetAllMediaItems();
+    /// <returns>List of media items.</returns>
+    IList<MediaItem> GetAllMediaItems();
   }
 }

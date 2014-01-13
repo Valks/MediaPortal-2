@@ -233,6 +233,21 @@ namespace UPnP.Infrastructure
     /// </summary>
     public const string NS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
+    /// <summary>
+    /// XML namespace for DIDL-Lite element set.
+    /// </summary>
+    public const string NS_DIDL_LITE_ELEMENT = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
+
+    /// <summary>
+    /// XML namespace for DIDL-Lite DC.
+    /// </summary>
+    public const string NS_DIDL_DC_ELEMENT = "http://purl.org/dc/elements/1.1/";
+
+    /// <summary>
+    /// XML namespace for UPNP Metadata.
+    /// </summary>
+    public const string NS_UPNP_METADATA = "urn:schemas-upnp-org:metadata-1-0/upnp/";
+
     #endregion
 
     public static Encoding UTF8_NO_BOM = new UTF8Encoding(false);

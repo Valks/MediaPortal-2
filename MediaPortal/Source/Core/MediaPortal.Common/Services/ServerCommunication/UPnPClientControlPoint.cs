@@ -51,7 +51,7 @@ namespace MediaPortal.Common.Services.ServerCommunication
     protected DeviceConnection _connection = null;
     protected UPnPContentDirectoryServiceProxy _contentDirectoryService = null;
     protected UPnPServerControllerServiceProxy _serverControllerService = null;
-    protected UPnPResourceInformationServiceProxy _resourceInformationService = null;
+    protected MPnPResourceInformationServiceProxy _resourceInformationService = null;
     protected UPnPUserProfileDataManagementServiceProxy _userProfileDataManagementService = null;
     protected ICollection<AdditionalServiceRegisterDlgt> _additionalServiceRegistrations = new List<AdditionalServiceRegisterDlgt>();
     protected ICollection<UPnPServiceProxyBase> _additionalServices = new List<UPnPServiceProxyBase>();
@@ -83,7 +83,7 @@ namespace MediaPortal.Common.Services.ServerCommunication
       get { return _contentDirectoryService; }
     }
 
-    public UPnPResourceInformationServiceProxy ResourceInformationService
+    public MPnPResourceInformationServiceProxy ResourceInformationService
     {
       get { return _resourceInformationService; }
     }
@@ -212,7 +212,7 @@ namespace MediaPortal.Common.Services.ServerCommunication
         lock (_networkTracker.SharedControlPointData.SyncObj)
         {
           _contentDirectoryService = new UPnPContentDirectoryServiceProxy(cdsStub);
-          _resourceInformationService = new UPnPResourceInformationServiceProxy(risStub);
+          _resourceInformationService = new MPnPResourceInformationServiceProxy(risStub);
           _serverControllerService = new UPnPServerControllerServiceProxy(scsStub);
           _userProfileDataManagementService = new UPnPUserProfileDataManagementServiceProxy(updmStub);
         }

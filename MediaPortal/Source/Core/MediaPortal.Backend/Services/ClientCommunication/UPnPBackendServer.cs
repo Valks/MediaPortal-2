@@ -35,9 +35,8 @@ namespace MediaPortal.Backend.Services.ClientCommunication
 
     public UPnPBackendServer(string backendServerSystemId)
     {
+      AddRootDevice(new UPnPBackendServerDevice(backendServerSystemId));
       AddRootDevice(new MP2BackendServerDevice(backendServerSystemId));
-      // TODO: add UPnP standard MediaServer device: it's not implemented yet
-      //AddRootDevice(new UPnPMediaServerDevice(...));
     }
 
     public void Start()

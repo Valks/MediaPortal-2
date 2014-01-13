@@ -531,8 +531,8 @@ namespace MediaPortal.Backend.Services.MediaLibrary
         {
           browseQuery.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
           {
-            new TakeFilter(null, requestedCount ?? -1), 
-            new SkipFilter(null, startingIndex ?? 0),
+            new TakeFilter(requestedCount ?? -1), 
+            new SkipFilter(startingIndex ?? 0),
           });
         }
         else
@@ -540,8 +540,8 @@ namespace MediaPortal.Backend.Services.MediaLibrary
           browseQuery.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
           {
             browseQuery.Filter,
-            new TakeFilter(null, requestedCount ?? -1), 
-            new SkipFilter(null, startingIndex ?? 0), 
+            new TakeFilter(requestedCount ?? -1), 
+            new SkipFilter(startingIndex ?? 0), 
           });
         }
         return Search(browseQuery, false);

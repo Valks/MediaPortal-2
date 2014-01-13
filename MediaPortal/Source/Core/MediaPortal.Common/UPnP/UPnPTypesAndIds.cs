@@ -30,31 +30,36 @@ namespace MediaPortal.Common.UPnP
   public class UPnPTypesAndIds
   {
     // Backend
-    public const string BACKEND_SERVER_DEVICE_TYPE = "schemas-team-mediaportal-com:device:MP2-Server";
-    public const int BACKEND_SERVER_DEVICE_TYPE_VERSION = 1;
+    //public const string BACKEND_SERVER_DEVICE_TYPE = "schemas-team-mediaportal-com:device:MP2-Server";
+    //public const int BACKEND_SERVER_DEVICE_TYPE_VERSION = 1;
 
-    public const string CONTENT_DIRECTORY_SERVICE_TYPE = "schemas-team-mediaportal-com:service:ContentDirectory";
+    public const string CONTENT_DIRECTORY_SERVICE_TYPE = "schemas-upnp-org:service:ContentDirectory";
     public const int CONTENT_DIRECTORY_SERVICE_TYPE_VERSION = 1;
-    public const string CONTENT_DIRECTORY_SERVICE_ID = "urn:team-mediaportal-com:serviceId:ContentDirectory";
+    public const string CONTENT_DIRECTORY_SERVICE_ID = "urn:upnp-org:serviceId:ContentDirectory";
 
-    public const string RESOURCE_INFORMATION_SERVICE_TYPE = "schemas-team-mediaportal-com:service:ResourceInformation";
-    public const int RESOURCE_INFORMATION_SERVICE_TYPE_VERSION = 1;
-    public const string RESOURCE_INFORMATION_SERVICE_ID = "urn:team-mediaportal-com:serviceId:ResourceInformation";
+    //public const string RESOURCE_INFORMATION_SERVICE_TYPE = "schemas-team-mediaportal-com:service:ResourceInformation";
+    //public const int RESOURCE_INFORMATION_SERVICE_TYPE_VERSION = 1;
+    //public const string RESOURCE_INFORMATION_SERVICE_ID = "urn:team-mediaportal-com:serviceId:ResourceInformation";
 
-    public const string SERVER_CONTROLLER_SERVICE_TYPE = "schemas-team-mediaportal-com:service:ServerController";
-    public const int SERVER_CONTROLLER_SERVICE_TYPE_VERSION = 1;
-    public const string SERVER_CONTROLLER_SERVICE_ID = "urn:team-mediaportal-com:serviceId:ServerController";
+    //public const string SERVER_CONTROLLER_SERVICE_TYPE = "schemas-team-mediaportal-com:service:ServerController";
+    //public const int SERVER_CONTROLLER_SERVICE_TYPE_VERSION = 1;
+    //public const string SERVER_CONTROLLER_SERVICE_ID = "urn:team-mediaportal-com:serviceId:ServerController";
 
-    public const string USER_PROFILE_DATA_MANAGEMENT_SERVICE_TYPE = "schemas-team-mediaportal-com:service:UserProfileDataManagement";
-    public const int USER_PROFILE_DATA_MANAGEMENT_SERVICE_TYPE_VERSION = 1;
-    public const string USER_PROFILE_DATA_MANAGEMENT_SERVICE_ID = "urn:team-mediaportal-com:serviceId:UserProfileDataManagement";
+    //public const string USER_PROFILE_DATA_MANAGEMENT_SERVICE_TYPE = "schemas-team-mediaportal-com:service:UserProfileDataManagement";
+    //public const int USER_PROFILE_DATA_MANAGEMENT_SERVICE_TYPE_VERSION = 1;
+    //public const string USER_PROFILE_DATA_MANAGEMENT_SERVICE_ID = "urn:team-mediaportal-com:serviceId:UserProfileDataManagement";
 
     // Frontend
-    public const string FRONTEND_SERVER_DEVICE_TYPE = "schemas-team-mediaportal-com:device:MP2-Client";
-    public const int FRONTEND_SERVER_DEVICE_TYPE_VERSION = 1;
+    //public const string FRONTEND_SERVER_DEVICE_TYPE = "schemas-team-mediaportal-com:device:MP2-Client";
+    //public const int FRONTEND_SERVER_DEVICE_TYPE_VERSION = 1;
 
-    public const string CLIENT_CONTROLLER_SERVICE_TYPE = "schemas-team-mediaportal-com:service:ClientController";
-    public const int CLIENT_CONTROLLER_SERVICE_TYPE_VERSION = 1;
-    public const string CLIENT_CONTROLLER_SERVICE_ID = "urn:team-mediaportal-com:serviceId:ClientController";
+    //public const string CLIENT_CONTROLLER_SERVICE_TYPE = "schemas-team-mediaportal-com:service:ClientController";
+    //public const int CLIENT_CONTROLLER_SERVICE_TYPE_VERSION = 1;
+    //public const string CLIENT_CONTROLLER_SERVICE_ID = "urn:team-mediaportal-com:serviceId:ClientController";
+
+
+    public const string CONNECTION_MANAGER_SERVICE_TYPE = "urn:schemas-upnp-org:service:ConnectionManager:1";
+    public const int CONNECTION_MANAGER_SERVICE_TYPE_VERSION = 1;
+    public const string CONTENT_MANAGER_SERVICE_ID = "urn:upnp-org:serviceId:ConnectionManager";
   }
 }

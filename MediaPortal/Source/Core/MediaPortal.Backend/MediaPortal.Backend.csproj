@@ -84,12 +84,21 @@
     <Compile Include="Services\ClientCommunication\ClientManager.cs" />
     <Compile Include="Services\ClientCommunication\ClientManager_SubSchema.cs" />
     <Compile Include="Services\ClientCommunication\LocalizedUPnPDeviceInformation.cs" />
+    <Compile Include="Services\ClientCommunication\MPnP\MPnPClientControllerServiceProxy.cs" />
+    <Compile Include="Services\ClientCommunication\MPnP\MPnPContentDirectoryServiceImpl.cs" />
+    <Compile Include="Services\ClientCommunication\MPnP\MPnPServerControllerServiceImpl.cs" />
+    <Compile Include="Services\ClientCommunication\MPnP\MPnPServerControlPoint.cs" />
+    <Compile Include="Services\ClientCommunication\UPnPBackendServerDevice.cs" />
     <Compile Include="Services\ClientCommunication\MP2BackendServerDevice.cs" />
     <Compile Include="Services\ClientCommunication\UPnPBackendServer.cs" />
     <Compile Include="Services\ClientCommunication\UPnPContentDirectoryServiceImpl.cs" />
     <Compile Include="Services\ClientCommunication\UPnPServerControllerServiceImpl.cs" />
     <Compile Include="Services\ClientCommunication\UPnPServerControlPoint.cs" />
     <Compile Include="Services\ClientCommunication\UPnPClientControllerServiceProxy.cs" />
+    <Compile Include="Services\ClientCommunication\UPnP\UPnPClientControllerServiceProxy.cs" />
+    <Compile Include="Services\ClientCommunication\UPnP\UPnPContentDirectoryServiceImpl.cs" />
+    <Compile Include="Services\ClientCommunication\UPnP\UPnPServerControllerServiceImpl.cs" />
+    <Compile Include="Services\ClientCommunication\UPnP\UPnPServerControlPoint.cs" />
     <Compile Include="Services\Database\LoggingDbCommandWrapper.cs" />
     <Compile Include="Services\Database\SqlScriptPreprocessor.cs" />
     <Compile Include="Services\MediaLibrary\BindVar.cs" />
@@ -163,5 +172,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

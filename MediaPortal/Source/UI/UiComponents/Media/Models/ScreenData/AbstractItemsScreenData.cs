@@ -56,7 +56,7 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     /// Creates a new instance of <see cref="AbstractItemsScreenData"/>.
     /// </summary>
     /// <param name="screen">The screen associated with this screen data.</param>
-    /// <param name="menuItemLabel">Laben which will be shown in the menu to switch to this screen data.</param>
+    /// <param name="menuItemLabel">Label which will be shown in the menu to switch to this screen data.</param>
     /// <param name="navbarSubViewNavigationDisplayLabel">Display label to be shown in the navbar when we
     /// navigate to a sub view.</param>
     /// <param name="playableItemCreator">Delegate which will be called for a media item when the user chooses it.</param>
@@ -186,6 +186,8 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       try
       {
         Display_ListBeingBuilt();
+        //**********
+        //TODO: Completely update this whole class
         ItemsList items;
         if (createNewList)
           items = new ItemsList();
@@ -209,41 +211,36 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
               Display_ItemsInvalid();
             else
             {
-              if (subViews.Count + mediaItems.Count > Consts.MAX_NUM_ITEMS_VISIBLE)
-                Display_TooManyItems(subViews.Count + mediaItems.Count);
-              else
+              int totalNumItems = 0;
+
+              List<NavigationItem> viewsList = new List<NavigationItem>();
+              foreach (View sv in subViews)
               {
-                int totalNumItems = 0;
-
-                List<NavigationItem> viewsList = new List<NavigationItem>();
-                foreach (View sv in subViews)
-                {
-                  ViewItem item = new ViewItem(sv, null, sv.AbsNumItems);
-                  View subView = sv;
-                  item.Command = new MethodDelegateCommand(() => NavigateToView(subView.Specification));
-                  viewsList.Add(item);
-                  if (sv.AbsNumItems.HasValue)
-                    totalNumItems += sv.AbsNumItems.Value;
-                }
-                viewsList.Sort((v1, v2) => string.Compare(v1.SortString, v2.SortString));
-                CollectionUtils.AddAll(items, viewsList);
-
-                lock (_syncObj)
-                  if (_listDirty)
-                    goto RebuildView;
-
-                PlayableItemCreatorDelegate picd = PlayableItemCreator;
-                List<PlayableMediaItem> itemsList = mediaItems.Select(childItem => picd(childItem)).Where(item => item != null).ToList();
-                Sorting.Sorting sorting = CurrentSorting;
-                if (sorting != null)
-                  itemsList.Sort((i1, i2) => sorting.Compare(i1.MediaItem, i2.MediaItem));
-                else
-                  // Default sorting: Use SortString
-                  itemsList.Sort((i1, i2) => string.Compare(i1.SortString, i2.SortString));
-                CollectionUtils.AddAll(items, itemsList);
-
-                Display_Normal(items.Count, totalNumItems == 0 ? new int?() : totalNumItems);
+                ViewItem item = new ViewItem(sv, null, sv.AbsNumItems);
+                View subView = sv;
+                item.Command = new MethodDelegateCommand(() => NavigateToView(subView.Specification));
+                viewsList.Add(item);
+                if (sv.AbsNumItems.HasValue)
+                  totalNumItems += sv.AbsNumItems.Value;
               }
+              viewsList.Sort((v1, v2) => string.Compare(v1.SortString, v2.SortString));
+              CollectionUtils.AddAll(items, viewsList);
+
+              lock (_syncObj)
+                if (_listDirty)
+                  goto RebuildView;
+
+              PlayableItemCreatorDelegate picd = PlayableItemCreator;
+              List<PlayableMediaItem> itemsList = mediaItems.Select(childItem => picd(childItem)).Where(item => item != null).ToList();
+              Sorting.Sorting sorting = CurrentSorting;
+              if (sorting != null)
+                itemsList.Sort((i1, i2) => sorting.Compare(i1.MediaItem, i2.MediaItem));
+              else
+                // Default sorting: Use SortString
+                itemsList.Sort((i1, i2) => string.Compare(i1.SortString, i2.SortString));
+              CollectionUtils.AddAll(items, itemsList);
+
+              Display_Normal(items.Count, totalNumItems == 0 ? new int?() : totalNumItems);
             }
           }
           else

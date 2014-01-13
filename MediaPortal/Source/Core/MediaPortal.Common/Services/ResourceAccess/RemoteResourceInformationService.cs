@@ -28,6 +28,7 @@ using System.Net;
 using MediaPortal.Common.Exceptions;
 using MediaPortal.Common.Logging;
 using MediaPortal.Common.ResourceAccess;
+using MediaPortal.Common.Services.MPnP;
 using MediaPortal.Common.UPnP;
 using MediaPortal.Utilities.Exceptions;
 using UPnP.Infrastructure.CP;
@@ -68,14 +69,14 @@ namespace MediaPortal.Common.Services.ResourceAccess
       }
       DeviceDescriptor rootDevice = DeviceDescriptor.CreateRootDeviceDescriptor(rootDescriptor);
       DeviceDescriptor frontendServerDevice = rootDevice.FindFirstDevice(
-          UPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE, UPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE_VERSION) ??
-              rootDevice.FindFirstDevice(UPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE, UPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE_VERSION);
+          MPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE, MPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE_VERSION) ??
+              rootDevice.FindFirstDevice(MPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE, MPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE_VERSION);
       if (frontendServerDevice == null)
         return null;
       string deviceUuid = frontendServerDevice.DeviceUUID;
       try
       {
-        connection = _controlPoint.Connect(rootDescriptor, deviceUuid, UPnPExtendedDataTypes.ResolveDataType);
+        connection = _controlPoint.Connect(rootDescriptor, deviceUuid, MPnPExtendedDataTypes.ResolveDataType);
       }
       catch (Exception e)
       {
@@ -84,10 +85,10 @@ namespace MediaPortal.Common.Services.ResourceAccess
       }
       try
       {
-        CpService rasStub = connection.Device.FindServiceByServiceId(UPnPTypesAndIds.RESOURCE_INFORMATION_SERVICE_ID);
+        CpService rasStub = connection.Device.FindServiceByServiceId(MPnPTypesAndIds.RESOURCE_INFORMATION_SERVICE_ID);
         if (rasStub == null)
           throw new InvalidDataException("ResourceAccess service not found in device '{0}'", deviceUuid);
-        IResourceInformationService ris = new UPnPResourceInformationServiceProxy(rasStub);
+        IResourceInformationService ris = new MPnPResourceInformationServiceProxy(rasStub);
         lock (_networkTracker.SharedControlPointData.SyncObj)
           rootDescriptor.SSDPRootEntry.ClientProperties[KEY_RESOURCE_INFORMATION_SERVICE] = ris;
         return ris;

@@ -58,9 +58,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>References\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Okra.Data, Version=1.0.0.13161, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Okra.Data, Version=1.0.1.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Packages\Okra.Data.1.0.0.13161\lib\net40\Okra.Data.dll</HintPath>
+      <HintPath>..\..\..\Packages\Okra.Data.1.0.1-CI00002\lib\net40\Okra.Data.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -285,8 +285,8 @@
     <Compile Include="Services\ResourceAccess\ResourceServer.cs" />
     <Compile Include="Services\ResourceAccess\Settings\ServerSettings.cs" />
     <Compile Include="Services\ResourceAccess\SynchronizedMasterStreamClient.cs" />
-    <Compile Include="Services\ResourceAccess\UPnPResourceInformationServiceProxy.cs" />
-    <Compile Include="Services\ResourceAccess\UPnPResourceInformationServiceImpl.cs" />
+    <Compile Include="Services\ResourceAccess\MPnPResourceInformationServiceProxy.cs" />
+    <Compile Include="Services\ResourceAccess\MPnPResourceInformationServiceImpl.cs" />
     <Compile Include="Services\PluginManager\Builders\BuilderHelper.cs" />
     <Compile Include="PluginManager\Exceptions\Exceptions.cs" />
     <Compile Include="PluginManager\FixedItemStateTracker.cs" />
@@ -359,31 +359,55 @@
     <Compile Include="Services\FileEventNotification\FileWatcherInfo.cs" />
     <Compile Include="Services\FileEventNotification\FileWatchEvent.cs" />
     <Compile Include="Services\FileEventNotification\FileWatchEventArgs.cs" />
-    <Compile Include="UPnP\UPnPDtMediaCategoryEnumeration.cs" />
-    <Compile Include="UPnP\UPnPTypesAndIds.cs" />
-    <Compile Include="UPnP\UPnPExtendedDataTypes.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaCategoryEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPTypesAndIds.cs" />
+    <Compile Include="Services\MPnP\MPnPExtendedDataTypes.cs" />
+    <Compile Include="Services\MPnP\DataTypesConfiguration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaItem.cs" />
+    <Compile Include="Services\MPnP\MPnPDtPlaylistRawData.cs" />
+    <Compile Include="Services\MPnP\MPnPDtPlaylistContents.cs" />
+    <Compile Include="Services\MPnP\MPnPDtPlaylistInformationDataEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMPClientMetadataEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtResourceProviderMetadataEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtResourceProviderMetadata.cs" />
+    <Compile Include="Services\MPnP\MPnPDtResourcePathMetadataEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaItemAspectEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaItemAttributeValues.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaItemQuery.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaItemEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaItemsFilter.cs" />
+    <Compile Include="Services\MPnP\MPnPDtResourcePathMetadata.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMLQueryResultGroupEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtShareEnumeration.cs" />
+    <Compile Include="Services\MPnP\MPnPDtMediaItemAspectMetadata.cs" />
+    <Compile Include="Services\MPnP\MPnPDtShare.cs" />
+    <Compile Include="Services\MPnP\MPnPDtUserProfile.cs" />
+    <Compile Include="Services\MPnP\MPnPDtUserProfileEnumeration.cs" />
     <Compile Include="UPnP\DataTypesConfiguration.cs" />
+    <Compile Include="UPnP\UPnPDtMediaCategoryEnumeration.cs" />
     <Compile Include="UPnP\UPnPDtMediaItem.cs" />
-    <Compile Include="UPnP\UPnPDtPlaylistRawData.cs" />
+    <Compile Include="UPnP\UPnPDtMediaItemAspectEnumeration.cs" />
+    <Compile Include="UPnP\UPnPDtMediaItemAspectMetadata.cs" />
+    <Compile Include="UPnP\UPnPDtMediaItemAttributeValues.cs" />
+    <Compile Include="UPnP\UPnPDtMediaItemEnumeration.cs" />
+    <Compile Include="UPnP\UPnPDtMediaItemQuery.cs" />
+    <Compile Include="UPnP\UPnPDtMediaItemsFilter.cs" />
+    <Compile Include="UPnP\UPnPDtMLQueryResultGroupEnumeration.cs" />
+    <Compile Include="UPnP\UPnPDtMPClientMetadataEnumeration.cs" />
     <Compile Include="UPnP\UPnPDtPlaylistContents.cs" />
     <Compile Include="UPnP\UPnPDtPlaylistInformationDataEnumeration.cs" />
-    <Compile Include="UPnP\UPnPDtMPClientMetadataEnumeration.cs" />
-    <Compile Include="UPnP\UPnPDtResourceProviderMetadataEnumeration.cs" />
-    <Compile Include="UPnP\UPnPDtResourceProviderMetadata.cs" />
-    <Compile Include="UPnP\UPnPDtResourcePathMetadataEnumeration.cs" />
-    <Compile Include="UPnP\UPnPDtMediaItemAspectEnumeration.cs" />
-    <Compile Include="UPnP\UPnPDtMediaItemAttributeValues.cs" />
-    <Compile Include="UPnP\UPnPDtMediaItemQuery.cs" />
-    <Compile Include="UPnP\UPnPDtMediaItemEnumeration.cs" />
-    <Compile Include="UPnP\UPnPDtMediaItemsFilter.cs" />
+    <Compile Include="UPnP\UPnPDtPlaylistRawData.cs" />
     <Compile Include="UPnP\UPnPDtResourcePathMetadata.cs" />
-    <Compile Include="UPnP\UPnPDtMLQueryResultGroupEnumeration.cs" />
-    <Compile Include="UPnP\UPnPServiceProxyBase.cs" />
-    <Compile Include="UPnP\UPnPDtShareEnumeration.cs" />
-    <Compile Include="UPnP\UPnPDtMediaItemAspectMetadata.cs" />
+    <Compile Include="UPnP\UPnPDtResourcePathMetadataEnumeration.cs" />
+    <Compile Include="UPnP\UPnPDtResourceProviderMetadata.cs" />
+    <Compile Include="UPnP\UPnPDtResourceProviderMetadataEnumeration.cs" />
     <Compile Include="UPnP\UPnPDtShare.cs" />
+    <Compile Include="UPnP\UPnPDtShareEnumeration.cs" />
     <Compile Include="UPnP\UPnPDtUserProfile.cs" />
     <Compile Include="UPnP\UPnPDtUserProfileEnumeration.cs" />
+    <Compile Include="UPnP\UPnPExtendedDataTypes.cs" />
+    <Compile Include="UPnP\UPnPServiceProxyBase.cs" />
+    <Compile Include="UPnP\UPnPTypesAndIds.cs" />
     <Compile Include="UserProfileDataManagement\IUserProfileDataManagement.cs" />
     <Compile Include="UserProfileDataManagement\UserProfile.cs" />
     <Compile Include="VersionInfo\VersionInfo.cs" />
@@ -429,6 +453,7 @@
     <None Include="build.targets" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="build.targets" />
 </Project>

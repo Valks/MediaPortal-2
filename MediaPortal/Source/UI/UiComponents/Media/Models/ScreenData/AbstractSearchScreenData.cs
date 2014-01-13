@@ -23,6 +23,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using MediaPortal.Common.General;
 using MediaPortal.Common.Localization;
@@ -47,11 +48,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
         base(screen, menuItemLabel, null, playableItemCreator, false)
     {
       _searchTimer = new Timer(OnSearchTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
-    }
-
-    public override string MoreThanMaxItemsHint
-    {
-      get { return LocalizationHelper.Translate(Consts.RES_MORE_THAN_MAX_ITEMS_SEARCH_RESULT_HINT, Consts.MAX_NUM_ITEMS_VISIBLE); }
     }
 
     public override string ListBeingBuiltHint
@@ -90,7 +86,7 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       DoSearch();
     }
 
-    protected override IEnumerable<MediaItem> GetAllMediaItemsOverride()
+    protected override IList<MediaItem> GetAllMediaItemsOverride()
     {
       return BuildAllItemsView().MediaItems;
     }
