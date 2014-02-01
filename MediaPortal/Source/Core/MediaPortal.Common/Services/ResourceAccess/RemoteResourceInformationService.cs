@@ -30,6 +30,7 @@ using MediaPortal.Common.Logging;
 using MediaPortal.Common.ResourceAccess;
 using MediaPortal.Common.Services.MPnP;
 using MediaPortal.Common.UPnP;
+using MediaPortal.Common.UPnP.MPnP;
 using MediaPortal.Utilities.Exceptions;
 using UPnP.Infrastructure.CP;
 using UPnP.Infrastructure.CP.Description;

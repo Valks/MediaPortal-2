@@ -22,22 +22,10 @@
 
 #endregion
 
-using MediaPortal.Backend.Services.UserProfileDataManagement;
-using MediaPortal.Common.Services.ResourceAccess;
-using MediaPortal.Common.UPnP;
-using UPnP.Infrastructure.Dv.DeviceTree;
-
-namespace MediaPortal.Backend.Services.ClientCommunication
+namespace MediaPortal.Common.UPnP.MPnP
 {
-  public class UPnPBackendServerDevice : DvDevice
+  public class DataTypesConfiguration
   {
-    public UPnPBackendServerDevice(string deviceUuid)
-      : base(
-        UPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE, UPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE_VERSION, deviceUuid,
-        new LocalizedUPnPDeviceInformation())
-    {
-      AddService(new UPnPContentDirectoryServiceImpl());
-      // TODO: UPnP AV MediaServer device
-    }
+    public const string DATATYPES_SCHEMA_URI = "urn:team-mediaportal-com:MP2-UPnP";
   }
 }

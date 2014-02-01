@@ -39,6 +39,7 @@ using UPnP.Infrastructure.Common;
 using UPnP.Infrastructure.Dv;
 using UPnP.Infrastructure.Dv.DeviceTree;
 using RelocationMode=MediaPortal.Backend.MediaLibrary.RelocationMode;
+using MediaPortal.Common.MediaManagement.DefaultItemAspects;
 
 namespace MediaPortal.Backend.Services.ClientCommunication
 {
@@ -52,7 +53,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
   /// </remarks>
   public class UPnPContentDirectoryServiceImpl : DvService
   {
-    protected AsynchronousMessageQueue _messageQueue;
+    //protected AsynchronousMessageQueue _messageQueue;
 
     protected DvStateVariable PlaylistsChangeCounter;
     protected DvStateVariable MIATypeRegistrationsChangeCounter;
@@ -64,9 +65,15 @@ namespace MediaPortal.Backend.Services.ClientCommunication
     protected UInt32 _currentlyImportingSharesChangeCt = 0;
     protected UInt32 _registeredSharesChangeCt = 0;
 
-    public UPnPContentDirectoryServiceImpl() : base(
-        UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_TYPE, UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_TYPE_VERSION,
-        UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_ID)
+
+    public UPnPContentDirectoryServiceImpl() : this(
+      UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_TYPE, UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_TYPE_VERSION,
+      UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_ID)
+    {
+    }
+
+    public UPnPContentDirectoryServiceImpl(string serviceType, int serviceTypeVersion, string serviceId) : base(
+      serviceType, serviceTypeVersion, serviceId)
     {
       // Basic Types
 
@@ -118,6 +125,11 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_Result);
 
       // (Optional) A_ARG_TYPE_SearchCriteria   string,                       2.5.5
+      DvStateVariable A_ARG_TYPE_SearchCriteria = new DvStateVariable("A_ARG_TYPE_SearchCriteria", new DvStandardDataType(UPnPStandardDataType.String))
+      {
+        SendEvents = false
+      };
+      AddStateVariable(A_ARG_TYPE_SearchCriteria);
 
       // Used for several parameters
       DvStateVariable A_ARG_TYPE_BrowseFlag = new DvStateVariable("A_ARG_TYPE_BrowseFlag", new DvStandardDataType(UPnPStandardDataType.String))
@@ -198,214 +210,6 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       // (Optional) ContainerUpdateIDs          string (CSV {string, ui4}),   2.5.21
       // Evented, Moderated Event, Max Event Rate = 2
 
-      // MediaPortal Specific State Variables
-
-      // Used to transport a resource path expression
-      DvStateVariable A_ARG_TYPE_ResourcePath = new DvStateVariable("A_ARG_TYPE_ResourcePath", new DvStandardDataType(UPnPStandardDataType.String))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_ResourcePath);
-
-      // Used to transport an enumeration of directories data
-      DvStateVariable A_ARG_TYPE_ResourcePaths = new DvStateVariable("A_ARG_TYPE_ResourcePaths", new DvExtendedDataType(UPnPExtendedDataTypes.DtResourcePathMetadataEnumeration))
-        {
-            SendEvents = false
-        };
-      AddStateVariable(A_ARG_TYPE_ResourcePaths);
-
-      // Used to hold names for several objects
-      DvStateVariable A_ARG_TYPE_Name = new DvStateVariable("A_ARG_TYPE_Name", new DvStandardDataType(UPnPStandardDataType.String))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_Name);
-
-      // CSV of media category strings
-      DvStateVariable A_ARG_TYPE_MediaCategoryEnumeration = new DvStateVariable("A_ARG_TYPE_MediaCategoryEnumeration", new DvStandardDataType(UPnPStandardDataType.String))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_MediaCategoryEnumeration);
-
-      // Used to transport the data of a share structure
-      DvStateVariable A_ARG_TYPE_Share = new DvStateVariable("A_ARG_TYPE_Share", new DvExtendedDataType(UPnPExtendedDataTypes.DtShare))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_Share);
-
-      // Used to transport an enumeration of shares data
-      DvStateVariable A_ARG_TYPE_ShareEnumeration = new DvStateVariable("A_ARG_TYPE_ShareEnumeration", new DvExtendedDataType(UPnPExtendedDataTypes.DtShareEnumeration))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_ShareEnumeration);
-
-      // Used to transport a media item aspect metadata structure
-      DvStateVariable A_ARG_TYPE_MediaItemAspectMetadata = new DvStateVariable("A_ARG_TYPE_MediaItemAspectMetadata", new DvExtendedDataType(UPnPExtendedDataTypes.DtMediaItemAspectMetadata))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_MediaItemAspectMetadata);
-
-      // Used to give a mode of relocating media items after a share edit.
-      DvStateVariable A_ARG_TYPE_MediaItemRelocationMode = new DvStateVariable("A_ARG_TYPE_MediaItemRelocationMode", new DvStandardDataType(UPnPStandardDataType.String))
-          {
-            SendEvents = false,
-            AllowedValueList = new List<string> {"Relocate", "ClearAndReImport"}
-          };
-      AddStateVariable(A_ARG_TYPE_MediaItemRelocationMode);
-
-      // Used to transport an argument of type MediaItemQuery
-      DvStateVariable A_ARG_TYPE_MediaItemQuery = new DvStateVariable("A_ARG_TYPE_MediaItemQuery", new DvExtendedDataType(UPnPExtendedDataTypes.DtMediaItemQuery))
-        {
-            SendEvents = false,
-        };
-      AddStateVariable(A_ARG_TYPE_MediaItemQuery);
-
-      // Used to transport a value indicating if only online objects are referred or all.
-      DvStateVariable A_ARG_TYPE_OnlineState = new DvStateVariable("A_ARG_TYPE_OnlineState", new DvStandardDataType(UPnPStandardDataType.String))
-        {
-            SendEvents = false,
-            AllowedValueList = new List<string> {"All", "OnlyOnline"}
-        };
-      AddStateVariable(A_ARG_TYPE_OnlineState);
-
-      // Used to transport a value indicating if query has to be done case sensitive or not.
-      DvStateVariable A_ARG_TYPE_CapitalizationMode = new DvStateVariable("A_ARG_TYPE_CapitalizationMode", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        SendEvents = false,
-        AllowedValueList = new List<string> { "CaseSensitive", "CaseInsensitive" }
-      };
-      AddStateVariable(A_ARG_TYPE_CapitalizationMode);
-
-      // Used to transport a single media item with some media item aspects
-      DvStateVariable A_ARG_TYPE_MediaItem = new DvStateVariable("A_ARG_TYPE_MediaItem", new DvExtendedDataType(UPnPExtendedDataTypes.DtMediaItem))
-        {
-            SendEvents = false,
-        };
-      AddStateVariable(A_ARG_TYPE_MediaItem);
-
-      // Used to transport a collection of media items with some media item aspects
-      DvStateVariable A_ARG_TYPE_MediaItems = new DvStateVariable("A_ARG_TYPE_MediaItems", new DvExtendedDataType(UPnPExtendedDataTypes.DtMediaItemEnumeration))
-        {
-            SendEvents = false,
-        };
-      AddStateVariable(A_ARG_TYPE_MediaItems);
-
-      // Used to transport a single media item filter
-      DvStateVariable A_ARG_TYPE_MediaItemFilter = new DvStateVariable("A_ARG_TYPE_MediaItemFilter", new DvExtendedDataType(UPnPExtendedDataTypes.DtMediaItemsFilter))
-        {
-            SendEvents = false,
-        };
-      AddStateVariable(A_ARG_TYPE_MediaItemFilter);
-
-      // Used to transport a collection of media item attribute values
-      DvStateVariable A_ARG_TYPE_MediaItemAttributeValues = new DvStateVariable("A_ARG_TYPE_MediaItemAttributeValues", new DvExtendedDataType(UPnPExtendedDataTypes.DtMediaItemAttributeValues))
-        {
-            SendEvents = false,
-        };
-      AddStateVariable(A_ARG_TYPE_MediaItemAttributeValues);
-
-      // Used to transport an enumeration of media item aspects for a media item specified elsewhere
-      DvStateVariable A_ARG_TYPE_MediaItemAspects = new DvStateVariable("A_ARG_TYPE_MediaItemAspects", new DvExtendedDataType(UPnPExtendedDataTypes.DtMediaItemAspectEnumeration))
-        {
-            SendEvents = false,
-        };
-      AddStateVariable(A_ARG_TYPE_MediaItemAspects);
-
-      // Used to transport the text to be used in a simple text search
-      DvStateVariable A_ARG_TYPE_SearchText = new DvStateVariable("A_ARG_TYPE_SearchText", new DvStandardDataType(UPnPStandardDataType.String))
-        {
-            SendEvents = false,
-        };
-      AddStateVariable(A_ARG_TYPE_SearchText);
-
-      // Used to transport a value indicating if only online objects are referred or all.
-      DvStateVariable A_ARG_TYPE_TextSearchMode = new DvStateVariable("A_ARG_TYPE_TextSearchMode", new DvStandardDataType(UPnPStandardDataType.String))
-        {
-            SendEvents = false,
-            AllowedValueList = new List<string> {"Normal", "ExcludeCLOBs"}
-        };
-      AddStateVariable(A_ARG_TYPE_TextSearchMode);
-
-      // Used to transport an enumeration of value group instances
-      DvStateVariable A_ARG_TYPE_MLQueryResultGroupEnumeration = new DvStateVariable("A_ARG_TYPE_MLQueryResultGroupEnumeration", new DvExtendedDataType(UPnPExtendedDataTypes.DtMLQueryResultGroupEnumeration))
-          {
-            SendEvents = false,
-          };
-      AddStateVariable(A_ARG_TYPE_MLQueryResultGroupEnumeration);
-
-      DvStateVariable A_ARG_TYPE_ProjectionFunction = new DvStateVariable("A_ARG_TYPE_ProjectionFunction", new DvStandardDataType(UPnPStandardDataType.String))
-        {
-            SendEvents = false,
-            AllowedValueList = new List<string> {"None", "DateToYear"}
-        };
-      AddStateVariable(A_ARG_TYPE_ProjectionFunction);
-
-      DvStateVariable A_ARG_TYPE_GroupingFunction = new DvStateVariable("A_ARG_TYPE_GroupingFunction", new DvStandardDataType(UPnPStandardDataType.String))
-        {
-            SendEvents = false,
-            AllowedValueList = new List<string> {"FirstCharacter"}
-        };
-      AddStateVariable(A_ARG_TYPE_GroupingFunction);
-
-      // Used to transport the data of a PlaylistContents instance
-      DvStateVariable A_ARG_TYPE_PlaylistContents = new DvStateVariable("A_ARG_TYPE_PlaylistContents", new DvExtendedDataType(UPnPExtendedDataTypes.DtPlaylistContents))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_PlaylistContents);
-
-      // Used to transport the data of a PlaylistRawData instance
-      DvStateVariable A_ARG_TYPE_PlaylistRawData = new DvStateVariable("A_ARG_TYPE_PlaylistRawData", new DvExtendedDataType(UPnPExtendedDataTypes.DtPlaylistRawData))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_PlaylistRawData);
-
-      // Used to transport an enumeration of playlist identification data (id, name) instances
-      DvStateVariable A_ARG_TYPE_PlaylistIdentificationDataEnumeration = new DvStateVariable("A_ARG_TYPE_PlaylistIdentificationDataEnumeration", new DvExtendedDataType(UPnPExtendedDataTypes.DtPlaylistInformationDataEnumeration))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_PlaylistIdentificationDataEnumeration);
-
-      // Change event for playlists
-      PlaylistsChangeCounter = new DvStateVariable("PlaylistsChangeCounter", new DvStandardDataType(UPnPStandardDataType.Ui4))
-        {
-            SendEvents = true,
-            Value = (uint) 0
-        };
-      AddStateVariable(PlaylistsChangeCounter);
-
-      // Change event for MIA type registrations
-      MIATypeRegistrationsChangeCounter = new DvStateVariable("MIATypeRegistrationsChangeCounter", new DvStandardDataType(UPnPStandardDataType.Ui4))
-        {
-            SendEvents = true,
-            Value = (uint) 0
-        };
-      AddStateVariable(MIATypeRegistrationsChangeCounter);
-
-      // Change event for registered shares
-      RegisteredSharesChangeCounter = new DvStateVariable("RegisteredSharesChangeCounter", new DvStandardDataType(UPnPStandardDataType.Ui4))
-        {
-            SendEvents = true,
-            Value = (uint) 0
-        };
-      AddStateVariable(RegisteredSharesChangeCounter);
-
-      // Change event for currently importing shares
-      CurrentlyImportingSharesChangeCounter = new DvStateVariable("CurrentlyImportingSharesChangeCounter", new DvStandardDataType(UPnPStandardDataType.Ui4))
-        {
-            SendEvents = true,
-            Value = (uint) 0
-        };
-      AddStateVariable(CurrentlyImportingSharesChangeCounter);
-
-      // More state variables go here
-      
       // Capabilities
 
       // UPnP 1.0 - 2.7.1 GetSearchCapabilities - Required
@@ -453,244 +257,92 @@ namespace MediaPortal.Backend.Services.ClientCommunication
             new DvArgument("SortCriteria", A_ARG_TYPE_SortCriteria, ArgumentDirection.In), 
           },
           new DvArgument[] {
-            new DvArgument("Result", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true),
+            new DvArgument("Result", A_ARG_TYPE_Result, ArgumentDirection.Out, true),
             new DvArgument("NumberReturned", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
             new DvArgument("TotalMatches", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
             new DvArgument("UpdateID", A_ARG_TYPE_UpdateID, ArgumentDirection.Out, true), 
           });
       AddAction(browseAction);
 
+      // UPnP 1.0 - 2.7.5 Search - Optional
       DvAction searchAction = new DvAction("Search", OnSearch,
           new DvArgument[] {
-            new DvArgument("Query", A_ARG_TYPE_MediaItemQuery, ArgumentDirection.In),
-            new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
+            new DvArgument("ContainerID", A_ARG_TYPE_ObjectId, ArgumentDirection.In),
+            new DvArgument("SearchCriteria", A_ARG_TYPE_SearchCriteria, ArgumentDirection.In),
             new DvArgument("StartingIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
             new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
+            new DvArgument("SortCriteria", A_ARG_TYPE_SortCriteria, ArgumentDirection.In),
           },
           new DvArgument[] {
-            new DvArgument("MediaItems", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true),
+            new DvArgument("Result", A_ARG_TYPE_Result, ArgumentDirection.Out, true),
             new DvArgument("NumberReturned", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
             new DvArgument("TotalMatches", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
             new DvArgument("UpdateID", A_ARG_TYPE_UpdateID, ArgumentDirection.Out, true), 
           });
       AddAction(searchAction);
 
-      DvAction textSearchAction = new DvAction("SimpleTextSearch", OnTextSearch,
-          new DvArgument[] {
-            new DvArgument("SearchText", A_ARG_TYPE_SearchText, ArgumentDirection.In),
-            new DvArgument("NecessaryMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-            new DvArgument("OptionalMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-            new DvArgument("Filter", A_ARG_TYPE_MediaItemFilter, ArgumentDirection.In),
-            new DvArgument("SearchMode", A_ARG_TYPE_TextSearchMode, ArgumentDirection.In),
-            new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
-            new DvArgument("CapitalizationMode", A_ARG_TYPE_CapitalizationMode, ArgumentDirection.In),
-            new DvArgument("StartingIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
-            new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
-          },
-          new DvArgument[] {
-            new DvArgument("MediaItems", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true),
-            new DvArgument("NumberReturned", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
-            new DvArgument("TotalMatches", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
-            new DvArgument("UpdateID", A_ARG_TYPE_UpdateID, ArgumentDirection.Out, true), 
-          });
-      AddAction(textSearchAction);
+      // UPnP 1.0 - 2.7.6 CreateObject - Optional
+      // UPnP 1.0 - 2.7.7 DestoryObject - Optional
+      // UPnP 1.0 - 2.7.8 UpdateObject - Optional
+      // UPnP 1.0 - 2.7.9 ImportResource - Optional
+      // UPnP 1.0 - 2.7.10 ExportResource - Optional
+      // UPnP 1.0 - 2.7.11 StopTransferResource - Optional
+      // UPnP 1.0 - 2.7.12 GetTransferProgress - Optional
+      // UPnP 1.0 - 2.7.13 DeleteResource - Optional
+      // UPnP 1.0 - 2.7.14 CreateReference - Optional
+      
+      // UPnP 1.0 - 2.7.15 Non-Stanard Actions Implementations - Don't add the UPnP, extend it and implement in your own library
+      // use MPnP as an example!
 
-      DvAction getValueGroupsAction = new DvAction("GetValueGroups", OnGetValueGroups,
-          new DvArgument[] {
-            new DvArgument("MIAType", A_ARG_TYPE_Uuid, ArgumentDirection.In),
-            new DvArgument("AttributeName", A_ARG_TYPE_Name, ArgumentDirection.In),
-            new DvArgument("SelectAttributeFilter", A_ARG_TYPE_MediaItemFilter, ArgumentDirection.In),
-            new DvArgument("ProjectionFunction", A_ARG_TYPE_ProjectionFunction, ArgumentDirection.In),
-            new DvArgument("NecessaryMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-            new DvArgument("Filter", A_ARG_TYPE_MediaItemFilter, ArgumentDirection.In),
-            new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-            new DvArgument("ValueGroups", A_ARG_TYPE_MediaItemAttributeValues, ArgumentDirection.Out, true),
-          });
-      AddAction(getValueGroupsAction);
-
-      DvAction groupValueGroupsAction = new DvAction("GroupValueGroups", OnGroupValueGroups,
-          new DvArgument[] {
-            new DvArgument("MIAType", A_ARG_TYPE_Uuid, ArgumentDirection.In),
-            new DvArgument("AttributeName", A_ARG_TYPE_Name, ArgumentDirection.In),
-            new DvArgument("SelectAttributeFilter", A_ARG_TYPE_MediaItemFilter, ArgumentDirection.In),
-            new DvArgument("ProjectionFunction", A_ARG_TYPE_ProjectionFunction, ArgumentDirection.In),
-            new DvArgument("NecessaryMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-            new DvArgument("Filter", A_ARG_TYPE_MediaItemFilter, ArgumentDirection.In),
-            new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
-            new DvArgument("GroupingFunction", A_ARG_TYPE_GroupingFunction, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-            new DvArgument("ResultGroups", A_ARG_TYPE_MLQueryResultGroupEnumeration, ArgumentDirection.Out, true),
-          });
-      AddAction(groupValueGroupsAction);
-
-      DvAction countMediaItemsAction = new DvAction("CountMediaItems", OnCountMediaItems,
-          new DvArgument[] {
-            new DvArgument("NecessaryMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-            new DvArgument("Filter", A_ARG_TYPE_MediaItemFilter, ArgumentDirection.In),
-            new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-            new DvArgument("NumMediaItems", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
-          });
-      AddAction(countMediaItemsAction);
-
-      // Playlist management
-
-      DvAction getPlaylistsAction = new DvAction("GetPlaylists", OnGetPlaylists,
-          new DvArgument[] {
-          },
-          new DvArgument[] {
-            new DvArgument("Playlists", A_ARG_TYPE_PlaylistIdentificationDataEnumeration, ArgumentDirection.Out, true),
-          });
-      AddAction(getPlaylistsAction);
-
-      DvAction savePlaylistAction = new DvAction("SavePlaylist", OnSavePlaylist,
-          new DvArgument[] {
-            new DvArgument("PlaylistRawData", A_ARG_TYPE_PlaylistRawData, ArgumentDirection.In)
-          },
-          new DvArgument[] {
-          });
-      AddAction(savePlaylistAction);
-
-      DvAction deletePlaylistAction = new DvAction("DeletePlaylist", OnDeletePlaylist,
-          new DvArgument[] {
-            new DvArgument("PlaylistId", A_ARG_TYPE_Uuid, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-            new DvArgument("Success", A_ARG_TYPE_Bool, ArgumentDirection.Out, true)
-          });
-      AddAction(deletePlaylistAction);
-
-      DvAction exportPlaylistAction = new DvAction("ExportPlaylist", OnExportPlaylist,
-          new DvArgument[] {
-            new DvArgument("PlaylistId", A_ARG_TYPE_Uuid, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-            new DvArgument("PlaylistRawData", A_ARG_TYPE_PlaylistRawData, ArgumentDirection.Out, true)
-          });
-      AddAction(exportPlaylistAction);
-
-      DvAction loadCustomPlaylistAction = new DvAction("LoadCustomPlaylist", OnLoadCustomPlaylist,
-          new DvArgument[] {
-            new DvArgument("MediaItemIds", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-            new DvArgument("NecessaryMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-            new DvArgument("OptionalMIATypes", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-            new DvArgument("MediaItems", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true)
-          });
-      AddAction(loadCustomPlaylistAction);
-
-      // Media import
-
-      DvAction addOrUpdateMediaItemAction = new DvAction("AddOrUpdateMediaItem", OnAddOrUpdateMediaItem,
-          new DvArgument[] {
-            new DvArgument("ParentDirectoryId", A_ARG_TYPE_Uuid, ArgumentDirection.In),
-            new DvArgument("SystemId", A_ARG_TYPE_SystemId, ArgumentDirection.In),
-            new DvArgument("Path", A_ARG_TYPE_ResourcePath, ArgumentDirection.In),
-            new DvArgument("UpdatedMediaItemAspects", A_ARG_TYPE_MediaItemAspects, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-            new DvArgument("MediaItemId", A_ARG_TYPE_Uuid, ArgumentDirection.Out, true),
-          });
-      AddAction(addOrUpdateMediaItemAction);
-
-      DvAction deleteMediaItemOrPathAction = new DvAction("DeleteMediaItemOrPath", OnDeleteMediaItemOrPath,
-          new DvArgument[] {
-            new DvArgument("SystemId", A_ARG_TYPE_SystemId, ArgumentDirection.In),
-            new DvArgument("Path", A_ARG_TYPE_ResourcePath, ArgumentDirection.In),
-            new DvArgument("Inclusive", A_ARG_TYPE_Bool, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-          });
-      AddAction(deleteMediaItemOrPathAction);
-
-      DvAction clientStartedShareImportAction = new DvAction("ClientStartedShareImport", OnClientStartedShareImport,
-          new DvArgument[] {
-            new DvArgument("ShareId", A_ARG_TYPE_Uuid, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-          });
-      AddAction(clientStartedShareImportAction);
-
-      DvAction clientCompletedShareImportAction = new DvAction("ClientCompletedShareImport", OnClientCompletedShareImport,
-          new DvArgument[] {
-            new DvArgument("ShareId", A_ARG_TYPE_Uuid, ArgumentDirection.In),
-          },
-          new DvArgument[] {
-          });
-      AddAction(clientCompletedShareImportAction);
-
-      DvAction getCurrentlyImportingSharesAction = new DvAction("GetCurrentlyImportingShares", OnGetCurrentlyImportingShares,
-          new DvArgument[] {
-          },
-          new DvArgument[] {
-            new DvArgument("ShareIds", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.Out, true), 
-          });
-      AddAction(getCurrentlyImportingSharesAction);
-
-      // Media playback
-
-      DvAction notifyPlaybackAction = new DvAction("NotifyPlayback", OnNotifyPlayback,
-          new DvArgument[] {
-            new DvArgument("MediaItemId", A_ARG_TYPE_Uuid, ArgumentDirection.In), 
-          },
-          new DvArgument[] {
-          });
-      AddAction(notifyPlaybackAction);
-
-      _messageQueue = new AsynchronousMessageQueue(this, new string[]
-        {
-            ContentDirectoryMessaging.CHANNEL,
-            ImporterWorkerMessaging.CHANNEL,
-        });
-      _messageQueue.MessageReceived += OnMessageReceived;
-      _messageQueue.Start();
+      //_messageQueue = new AsynchronousMessageQueue(this, new string[]
+      //  {
+      //      ContentDirectoryMessaging.CHANNEL,
+      //      ImporterWorkerMessaging.CHANNEL,
+      //  });
+      //_messageQueue.MessageReceived += OnMessageReceived;
+      //_messageQueue.Start();
     }
 
     public override void Dispose()
     {
       base.Dispose();
-      _messageQueue.Shutdown();
+      //_messageQueue.Shutdown();
     }
 
-    private void OnMessageReceived(AsynchronousMessageQueue queue, SystemMessage message)
-    {
-      if (message.ChannelName == ContentDirectoryMessaging.CHANNEL)
-      {
-        ContentDirectoryMessaging.MessageType messageType = (ContentDirectoryMessaging.MessageType) message.MessageType;
-        switch (messageType)
-        {
-          case ContentDirectoryMessaging.MessageType.PlaylistsChanged:
-            PlaylistsChangeCounter.Value = ++_playlistsChangeCt;
-            break;
-          case ContentDirectoryMessaging.MessageType.MIATypesChanged:
-            MIATypeRegistrationsChangeCounter.Value = ++_miaTypeRegistrationsChangeCt;
-            break;
-          case ContentDirectoryMessaging.MessageType.RegisteredSharesChanged:
-            RegisteredSharesChangeCounter.Value = ++_registeredSharesChangeCt;
-            break;
-          case ContentDirectoryMessaging.MessageType.ShareImportStarted:
-          case ContentDirectoryMessaging.MessageType.ShareImportCompleted:
-            CurrentlyImportingSharesChangeCounter.Value = ++_currentlyImportingSharesChangeCt;
-            break;
-        }
-      }
-      else if (message.ChannelName == ImporterWorkerMessaging.CHANNEL)
-      {
-        ImporterWorkerMessaging.MessageType messageType = (ImporterWorkerMessaging.MessageType) message.MessageType;
-        switch (messageType)
-        {
-          case ImporterWorkerMessaging.MessageType.ImportStarted:
-          case ImporterWorkerMessaging.MessageType.ImportCompleted:
-            CurrentlyImportingSharesChangeCounter.Value = ++_currentlyImportingSharesChangeCt;
-            break;
-        }
-      }
-    }
+    //private void OnMessageReceived(AsynchronousMessageQueue queue, SystemMessage message)
+    //{
+    //  if (message.ChannelName == ContentDirectoryMessaging.CHANNEL)
+    //  {
+    //    ContentDirectoryMessaging.MessageType messageType = (ContentDirectoryMessaging.MessageType) message.MessageType;
+    //    switch (messageType)
+    //    {
+    //      case ContentDirectoryMessaging.MessageType.PlaylistsChanged:
+    //        PlaylistsChangeCounter.Value = ++_playlistsChangeCt;
+    //        break;
+    //      case ContentDirectoryMessaging.MessageType.MIATypesChanged:
+    //        MIATypeRegistrationsChangeCounter.Value = ++_miaTypeRegistrationsChangeCt;
+    //        break;
+    //      case ContentDirectoryMessaging.MessageType.RegisteredSharesChanged:
+    //        RegisteredSharesChangeCounter.Value = ++_registeredSharesChangeCt;
+    //        break;
+    //      case ContentDirectoryMessaging.MessageType.ShareImportStarted:
+    //      case ContentDirectoryMessaging.MessageType.ShareImportCompleted:
+    //        CurrentlyImportingSharesChangeCounter.Value = ++_currentlyImportingSharesChangeCt;
+    //        break;
+    //    }
+    //  }
+    //  else if (message.ChannelName == ImporterWorkerMessaging.CHANNEL)
+    //  {
+    //    ImporterWorkerMessaging.MessageType messageType = (ImporterWorkerMessaging.MessageType) message.MessageType;
+    //    switch (messageType)
+    //    {
+    //      case ImporterWorkerMessaging.MessageType.ImportStarted:
+    //      case ImporterWorkerMessaging.MessageType.ImportCompleted:
+    //        CurrentlyImportingSharesChangeCounter.Value = ++_currentlyImportingSharesChangeCt;
+    //        break;
+    //    }
+    //  }
+    //}
 
     static UPnPError ParseOnlineState(string argumentName, string onlineStateStr, out bool all)
     {
@@ -794,7 +446,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       return null;
     }
 
-    static UPnPError OnRegisterShare(DvAction action, IList<object> inParams, out IList<object> outParams,
+     static UPnPError OnRegisterShare(DvAction action, IList<object> inParams, out IList<object> outParams,
         CallContext context)
     {
       Share share = (Share) inParams[0];
@@ -937,13 +589,52 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       return null;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="inParams"></param>
+    /// <param name="outParams"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    /// <example>
+    ///  new DvArgument[] {
+    ///  new DvArgument("ObjectId", A_ARG_TYPE_Uuid, ArgumentDirection.In),               // ParentDirectory
+    ///  new DvArgument("BrowseFlag", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),  // NecessaryMIATypes
+    ///  new DvArgument("Filter", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),      // OptionalMIATypes
+    ///  new DvArgument("StartingIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
+    ///  new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
+    ///  new DvArgument("SortCriteria", A_ARG_TYPE_SortCriteria, ArgumentDirection.In), 
+    ///},
+    ///new DvArgument[] {
+    ///  new DvArgument("Result", A_ARG_TYPE_Result, ArgumentDirection.Out, true),
+    ///  new DvArgument("NumberReturned", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+    ///  new DvArgument("TotalMatches", A_ARG_TYPE_Count, ArgumentDirection.Out, true),
+    ///  new DvArgument("UpdateID", A_ARG_TYPE_UpdateID, ArgumentDirection.Out, true), 
+    ///});
+    /// </example>
     static UPnPError OnBrowse(DvAction action, IList<object> inParams, out IList<object> outParams,
         CallContext context)
     {
-      Guid parentDirectoryId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      IEnumerable<Guid> necessaryMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[1]);
-      IEnumerable<Guid> optionalMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[2]);
-      IList<MediaItem> result = ServiceRegistration.Get<IMediaLibrary>().Browse(parentDirectoryId, necessaryMIATypes, optionalMIATypes, (int)inParams[3], (int)inParams[4]);
+      Guid parentDirectoryId = (string)inParams[0] == "0" ? Guid.Empty : MarshallingHelper.DeserializeGuid((string)inParams[0]);
+      string browseFlag = inParams[1].ToString();
+      string filter = inParams[2].ToString();
+      int startIndex = Convert.ToInt32(inParams[3]);
+      int requestedCount = Convert.ToInt32(inParams[4]);
+      string sortCriteria = (string)inParams[5];
+
+      var necessaryMIATypes = new List<Guid> { DirectoryAspect.ASPECT_ID };
+
+      MediaItemQuery query = new MediaItemQuery(necessaryMIATypes, null);
+
+      if (requestedCount != 0)
+        query.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
+        {
+          new TakeFilter(requestedCount),
+          new SkipFilter(startIndex),
+        });
+
+      IList<MediaItem> result = ServiceRegistration.Get<IMediaLibrary>().Search(query, false);
 
       outParams = new List<object>
       {

@@ -28,6 +28,7 @@ using System.Data;
 using MediaPortal.Backend.ClientCommunication;
 using MediaPortal.Backend.Database;
 using MediaPortal.Backend.MediaLibrary;
+using MediaPortal.Backend.Services.ClientCommunication.MPnP;
 using MediaPortal.Backend.Services.Database;
 using MediaPortal.Common;
 using MediaPortal.Common.General;
@@ -41,13 +42,13 @@ namespace MediaPortal.Backend.Services.ClientCommunication
 {
   public class ClientManager : IClientManager
   {
-    protected UPnPServerControlPoint _controlPoint = null;
+    protected MPnPServerControlPoint _controlPoint = null;
     protected object _syncObj = new object();
     protected IDictionary<string, MPClientMetadata> _attachedClients;
 
     public ClientManager()
     {
-      _controlPoint = new UPnPServerControlPoint();
+      _controlPoint = new MPnPServerControlPoint();
       _controlPoint.ClientConnected += OnClientConnected;
       _controlPoint.ClientDisconnected += OnClientDisconnected;
     }

@@ -24,7 +24,7 @@
 
 using System;
 using MediaPortal.Common.General;
-using MediaPortal.Common.UPnP;
+using MediaPortal.Common.UPnP.MPnP;
 using UPnP.Infrastructure.CP;
 using UPnP.Infrastructure.CP.Description;
 
@@ -45,7 +45,7 @@ namespace MediaPortal.Common.SystemCommunication
       if (rootDescriptor == null)
         return null;
       DeviceDescriptor serverDeviceDescriptor = rootDescriptor.FindFirstDevice(
-          UPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE, UPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE_VERSION);
+          MPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE, MPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE_VERSION);
       return serverDeviceDescriptor == null ? null : new ServerDescriptor(serverDeviceDescriptor);
     }
 

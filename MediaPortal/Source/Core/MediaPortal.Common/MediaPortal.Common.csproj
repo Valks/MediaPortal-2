@@ -86,8 +86,12 @@
     <Compile Include="Services\ResourceAccess\RawUrlResourceProvider\RawUrlResourceAccessor.cs" />
     <Compile Include="Services\ResourceAccess\Settings\AvailableDriveLettersSettings.cs" />
     <Compile Include="Services\Runtime\PowerEventHandler.cs" />
+    <Compile Include="Services\ServerCommunication\MPnP\MPnPClientControlPoint.cs" />
+    <Compile Include="Services\ServerCommunication\MPnP\MPnPContentDirectoryServiceProxy.cs" />
+    <Compile Include="Services\ServerCommunication\MPnP\MPnPServerControllerServiceProxy.cs" />
+    <Compile Include="Services\ServerCommunication\MPnP\MPnPServerWatcher.cs" />
+    <Compile Include="Services\ServerCommunication\MPnP\MPnPUserProfileDataManagementServiceProxy.cs" />
     <Compile Include="Services\ServerCommunication\UPnPContentDirectoryPagedDataSource.cs" />
-    <Compile Include="Services\ServerCommunication\UPnPServerWatcher.cs" />
     <Compile Include="Services\Settings\SettingsChangeWatcher.cs" />
     <Compile Include="Services\Settings\SettingsManagerMessaging.cs" />
     <Compile Include="Services\TaskScheduler\TaskWaitableTimer.cs" />
@@ -305,10 +309,7 @@
     <Compile Include="ServiceCreatorCallback.cs" />
     <Compile Include="Exceptions\ServiceNotFoundException.cs" />
     <Compile Include="ServiceRegistration.cs" />
-    <Compile Include="Services\ServerCommunication\UPnPClientControlPoint.cs" />
     <Compile Include="Services\ServerCommunication\UPnPContentDirectoryServiceProxy.cs" />
-    <Compile Include="Services\ServerCommunication\UPnPServerControllerServiceProxy.cs" />
-    <Compile Include="Services\ServerCommunication\UPnPUserProfileDataManagementServiceProxy.cs" />
     <Compile Include="Services\Settings\SettingsCache.cs" />
     <Compile Include="Services\Settings\SettingsFileHandler.cs" />
     <Compile Include="Services\Settings\SettingsManager.cs" />
@@ -359,30 +360,30 @@
     <Compile Include="Services\FileEventNotification\FileWatcherInfo.cs" />
     <Compile Include="Services\FileEventNotification\FileWatchEvent.cs" />
     <Compile Include="Services\FileEventNotification\FileWatchEventArgs.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaCategoryEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPTypesAndIds.cs" />
-    <Compile Include="Services\MPnP\MPnPExtendedDataTypes.cs" />
-    <Compile Include="Services\MPnP\DataTypesConfiguration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaItem.cs" />
-    <Compile Include="Services\MPnP\MPnPDtPlaylistRawData.cs" />
-    <Compile Include="Services\MPnP\MPnPDtPlaylistContents.cs" />
-    <Compile Include="Services\MPnP\MPnPDtPlaylistInformationDataEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMPClientMetadataEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtResourceProviderMetadataEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtResourceProviderMetadata.cs" />
-    <Compile Include="Services\MPnP\MPnPDtResourcePathMetadataEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaItemAspectEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaItemAttributeValues.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaItemQuery.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaItemEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaItemsFilter.cs" />
-    <Compile Include="Services\MPnP\MPnPDtResourcePathMetadata.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMLQueryResultGroupEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtShareEnumeration.cs" />
-    <Compile Include="Services\MPnP\MPnPDtMediaItemAspectMetadata.cs" />
-    <Compile Include="Services\MPnP\MPnPDtShare.cs" />
-    <Compile Include="Services\MPnP\MPnPDtUserProfile.cs" />
-    <Compile Include="Services\MPnP\MPnPDtUserProfileEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaCategoryEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPTypesAndIds.cs" />
+    <Compile Include="UPnP\MPnP\MPnPExtendedDataTypes.cs" />
+    <Compile Include="UPnP\MPnP\DataTypesConfiguration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaItem.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtPlaylistRawData.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtPlaylistContents.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtPlaylistInformationDataEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMPClientMetadataEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtResourceProviderMetadataEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtResourceProviderMetadata.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtResourcePathMetadataEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaItemAspectEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaItemAttributeValues.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaItemQuery.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaItemEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaItemsFilter.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtResourcePathMetadata.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMLQueryResultGroupEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtShareEnumeration.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtMediaItemAspectMetadata.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtShare.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtUserProfile.cs" />
+    <Compile Include="UPnP\MPnP\MPnPDtUserProfileEnumeration.cs" />
     <Compile Include="UPnP\DataTypesConfiguration.cs" />
     <Compile Include="UPnP\UPnPDtMediaCategoryEnumeration.cs" />
     <Compile Include="UPnP\UPnPDtMediaItem.cs" />
@@ -453,7 +454,9 @@
     <None Include="build.targets" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Services\ServerCommunication\UPnP\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="build.targets" />
 </Project>

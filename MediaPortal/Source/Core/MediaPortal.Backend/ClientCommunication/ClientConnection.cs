@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using MediaPortal.Backend.Services.ClientCommunication;
 using MediaPortal.Common.UPnP;
+using MediaPortal.Common.UPnP.MPnP;
 using MediaPortal.Utilities.Exceptions;
 using UPnP.Infrastructure.CP;
 using UPnP.Infrastructure.CP.DeviceTree;
@@ -47,21 +48,21 @@ namespace MediaPortal.Backend.ClientCommunication
       _controlPoint = controlPoint;
       _connection = connection;
       _clientDescriptor = clientDescriptor;
-      _connection.DeviceDisconnected += OnUPnPDeviceDisconnected;
+      _connection.DeviceDisconnected += OnMPnPDeviceDisconnected;
       try
       {
-        CpService ccsStub = connection.Device.FindServiceByServiceId(UPnPTypesAndIds.CLIENT_CONTROLLER_SERVICE_ID);
+        CpService ccsStub = connection.Device.FindServiceByServiceId(MPnPTypesAndIds.CLIENT_CONTROLLER_SERVICE_ID);
         if (ccsStub == null)
           throw new InvalidDataException("ClientController service not found in device '{0}' of type '{1}:{2}'",
               clientDescriptor.MPFrontendServerUUID,
-              UPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE, UPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE_VERSION);
+              MPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE, MPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE_VERSION);
         lock (_connection.CPData.SyncObj)
           _clientController = new UPnPClientControllerServiceProxy(ccsStub);
         // TODO: other services
       }
       catch (Exception)
       {
-        _connection.DeviceDisconnected -= OnUPnPDeviceDisconnected;
+        _connection.DeviceDisconnected -= OnMPnPDeviceDisconnected;
         throw;
       }
     }
@@ -106,7 +107,7 @@ namespace MediaPortal.Backend.ClientCommunication
     }
 
 
-    void OnUPnPDeviceDisconnected(DeviceConnection connection)
+    void OnMPnPDeviceDisconnected(DeviceConnection connection)
     {
       _clientController = null;
       InvokeClientDeviceDisconnected(this);

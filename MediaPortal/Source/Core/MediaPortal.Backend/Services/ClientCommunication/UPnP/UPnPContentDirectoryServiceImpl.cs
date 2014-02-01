@@ -28,12 +28,14 @@ using MediaPortal.Common;
 using MediaPortal.Common.MediaManagement;
 using MediaPortal.Common.MediaManagement.DefaultItemAspects;
 using MediaPortal.Common.MediaManagement.MLQueries;
+using MediaPortal.Common.ResourceAccess;
 using MediaPortal.Common.UPnP;
 using MediaPortal.Backend.MediaLibrary;
 using MediaPortal.Utilities.UPnP;
 using UPnP.Infrastructure.Common;
 using UPnP.Infrastructure.Dv;
 using UPnP.Infrastructure.Dv.DeviceTree;
+using UPnP.Infrastructure.Utils;
 
 namespace MediaPortal.Backend.Services.ClientCommunication.UPnP
 {
@@ -339,7 +341,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication.UPnP
 
     static UPnPError OnGetSystemUpdateID(DvAction action, IList<object> inParams, out IList<object> outParams, CallContext context)
     {
-      // Polling for changes not supported, restart your media server.
+      // Polling for changes not supported, restart your media client.
       outParams = new List<object>
       {
         0
@@ -351,18 +353,55 @@ namespace MediaPortal.Backend.Services.ClientCommunication.UPnP
     // TODO: update to UPnP Version
     static UPnPError OnBrowse(DvAction action, IList<object> inParams, out IList<object> outParams, CallContext context)
     {
-      Guid parentDirectoryId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      IEnumerable<Guid> necessaryMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[1]);
-      IEnumerable<Guid> optionalMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[2]);
-      IList<MediaItem> result = ServiceRegistration.Get<IMediaLibrary>().Browse(parentDirectoryId, necessaryMIATypes, optionalMIATypes, (int)inParams[3], (int)inParams[4]);
+      // In parameters
+      Guid parentDirectoryId = (string) inParams[0] == "0" ?  Guid.Empty : MarshallingHelper.DeserializeGuid((string) inParams[0]);
+      string browseFlag = inParams[1].ToString();
+      string filter = inParams[2].ToString();
+      int startIndex = Convert.ToInt32(inParams[3]);
+      int requestedCount = Convert.ToInt32(inParams[4]);
+      string sortCriteria = (string)inParams[5];
 
-      outParams = new List<object>
+      // Out parameters
+      int numberReturned = 0;
+      int totalMatches = 0;
+      int containerUpdateId;
+
+      var necessaryMIATypes = new List<Guid> { DirectoryAspect.ASPECT_ID };
+
+      // TODO: filter?
+      MediaItemQuery query = new MediaItemQuery(necessaryMIATypes, null);
+
+      if (requestedCount != 0)
+        query.Filter = new BooleanCombinationFilter(BooleanOperator.And, new IFilter[]
+        {
+          new TakeFilter(requestedCount),
+          new SkipFilter(startIndex),
+        });
+
+      IList<MediaItem> mediaItems = ServiceRegistration.Get<IMediaLibrary>().Search(query, false);
+
+      if(mediaItems == null)
+        outParams = new object[]
+        {
+          null,           // Result
+          null,           // NumberReturned
+          0,              // TotalMatches
+          null            // UpdateID
+        };
+      else
       {
-        result,       // Result
-        null,         // NumberReturned
-        result.Count, // TotalMatches
+        // TODO: Fix the count, depends on what's returned as to if count means all possible matches or the filtered results taking into consideration the Take / Skip filters like it should. Needs to ignore those filters.
+        // TODO: Work out DIDL implementation then generate a DIDL response for the result.
+        outParams = new List<object>
+      {
+        null,       // Result
+        mediaItems.Count > requestedCount && requestedCount != 0 ? requestedCount : mediaItems.Count,         // NumberReturned
+        mediaItems.Count, // TotalMatches
         null          // UpdateID
       };
+      }
+      
+      throw new NotImplementedException("DIDL implementation not complete. UPnP Browse function doesn't work!");
       return null;
     }
 
@@ -401,6 +440,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication.UPnP
         null              // UpdateID
       };
 
+      throw new NotImplementedException("DIDL implementation not complete. UPnP Browse function doesn't work!");
       return null;
     }
 

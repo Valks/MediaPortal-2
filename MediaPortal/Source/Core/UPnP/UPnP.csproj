@@ -98,8 +98,8 @@
     <Compile Include="Infrastructure\CP\Exceptions.cs" />
     <Compile Include="Infrastructure\CP\GENA\EventSubscription.cs" />
     <Compile Include="Infrastructure\Dv\CallContext.cs" />
+    <Compile Include="Infrastructure\Dv\DIDL\DIDLMessageBuilder.cs" />
     <Compile Include="Infrastructure\Utils\CompressionHelper.cs" />
-    <Compile Include="Infrastructure\Utils\DidlHelper.cs" />
     <Compile Include="Infrastructure\Utils\UDPAsyncReceiveState.cs" />
     <Compile Include="Infrastructure\ILogger.cs" />
     <Compile Include="Infrastructure\Utils\HttpServerHelper.cs" />
@@ -202,6 +202,11 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Infrastructure\Dv\DIDL\Definition\DIDL-Lite.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

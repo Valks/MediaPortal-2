@@ -25,6 +25,7 @@
 using System;
 using MediaPortal.Common.General;
 using MediaPortal.Common.UPnP;
+using MediaPortal.Common.UPnP.MPnP;
 using UPnP.Infrastructure.CP;
 using UPnP.Infrastructure.CP.Description;
 
@@ -45,7 +46,7 @@ namespace MediaPortal.Backend.ClientCommunication
       if (rootDescriptor == null)
         return null;
       DeviceDescriptor serverDeviceDescriptor = rootDescriptor.FindFirstDevice(
-          UPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE, UPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE_VERSION);
+          MPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE, MPnPTypesAndIds.FRONTEND_SERVER_DEVICE_TYPE_VERSION);
       return serverDeviceDescriptor == null ? null : new ClientDescriptor(serverDeviceDescriptor);
     }
 
@@ -65,7 +66,7 @@ namespace MediaPortal.Backend.ClientCommunication
     }
 
     /// <summary>
-    /// Device ID of the client's UPnP device. This ID is referred to as "system ID".
+    /// Device ID of the client's MPnP device. This ID is referred to as "system ID".
     /// </summary>
     public string MPFrontendServerUUID
     {

@@ -50,7 +50,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
   /// different data structure for media items, so it isn't compatible with the standard ContentDirectory service. It also
   /// provides special actions to manage shares and media item aspect metadata schemas.
   /// </remarks>
-  public class MPnPContentDirectoryServiceImpl : DvService
+  public class MPnPContentDirectoryServiceImpl : UPnPContentDirectoryServiceImpl
   {
     protected AsynchronousMessageQueue _messageQueue;
 
@@ -68,136 +68,6 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
         UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_TYPE, UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_TYPE_VERSION,
         UPnPTypesAndIds.CONTENT_DIRECTORY_SERVICE_ID)
     {
-      // Basic Types
-
-      // Used for a boolean value
-      DvStateVariable A_ARG_TYPE_Bool = new DvStateVariable("A_ARG_TYPE_Bool", new DvStandardDataType(UPnPStandardDataType.Boolean))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_Bool);
-
-      // Used for any single GUID value
-      DvStateVariable A_ARG_TYPE_Uuid = new DvStateVariable("A_ARG_TYPE_Id", new DvStandardDataType(UPnPStandardDataType.Uuid))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_Uuid);
-
-      // CSV of GUID strings
-      DvStateVariable A_ARG_TYPE_UuidEnumeration = new DvStateVariable("A_ARG_TYPE_UuidEnumeration", new DvStandardDataType(UPnPStandardDataType.String))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_UuidEnumeration);
-
-      // Used for a system ID string
-      DvStateVariable A_ARG_TYPE_SystemId = new DvStateVariable("A_ARG_TYPE_SystemId", new DvStandardDataType(UPnPStandardDataType.String))
-          {
-            SendEvents = false
-          };
-      AddStateVariable(A_ARG_TYPE_SystemId);
-      
-      // UPnP 1.0 State variables
-      
-      // (Optional) TransferIDs                 string (CSV ui4),             2.5.2
-      //  Evented = true (Not Moderated)
-
-      // Used for several parameters
-      DvStateVariable A_ARG_TYPE_ObjectId = new DvStateVariable("A_ARG_TYPE_ObjectId", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        SendEvents = false
-      };
-      AddStateVariable(A_ARG_TYPE_ObjectId);
-
-      // Used for several return values
-      DvStateVariable A_ARG_TYPE_Result = new DvStateVariable("A_ARG_TYPE_Result", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        SendEvents = false
-      };
-      AddStateVariable(A_ARG_TYPE_Result);
-
-      // (Optional) A_ARG_TYPE_SearchCriteria   string,                       2.5.5
-
-      // Used for several parameters
-      DvStateVariable A_ARG_TYPE_BrowseFlag = new DvStateVariable("A_ARG_TYPE_BrowseFlag", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        AllowedValueList = new string[] { "BrowseMetadata", "BrowseDirectChildren" },
-        SendEvents = false
-      };
-      AddStateVariable(A_ARG_TYPE_BrowseFlag);
-
-      // Used for several parameters
-      DvStateVariable A_ARG_TYPE_Filter = new DvStateVariable("A_ARG_TYPE_Filter", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        SendEvents = false
-      };
-      AddStateVariable(A_ARG_TYPE_Filter);
-
-      // Used for several parameters
-      DvStateVariable A_ARG_TYPE_SortCriteria = new DvStateVariable("A_ARG_TYPE_SortCriteria", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        SendEvents = false
-      };
-      AddStateVariable(A_ARG_TYPE_SortCriteria);
-
-      // Used for several parameters
-      DvStateVariable A_ARG_TYPE_Index = new DvStateVariable("A_ARG_TYPE_Index", new DvStandardDataType(UPnPStandardDataType.Ui4))
-      {
-        SendEvents = false
-      }; // Is int sufficent here?
-      AddStateVariable(A_ARG_TYPE_Index);
-
-      // Used for several parameters and result values
-      DvStateVariable A_ARG_TYPE_Count = new DvStateVariable("A_ARG_TYPE_Count", new DvStandardDataType(UPnPStandardDataType.Ui4))
-          {
-            SendEvents = false
-          }; // Is int sufficient here?
-      AddStateVariable(A_ARG_TYPE_Count);
-
-      // Used to indicate a change has occured,
-      DvStateVariable A_ARG_TYPE_UpdateID = new DvStateVariable("A_ARG_TYPE_UpdateID", new DvStandardDataType(UPnPStandardDataType.Ui4));
-      AddStateVariable(A_ARG_TYPE_UpdateID);
-
-      // (Optional) A_ARG_TYPE_TransferId,      ui4,                          2.5.12
-      // (Optional) A_ARG_TYPE_TransferStatus   string,                       2.5.13
-      // (Optional) A_ARG_TYPE_TransferLength   string,                       2.5.14
-      // (Optional) A_ARG_TYPE_TransferTotal    string                        2.5.15
-      // (Optional) A_ARG_TYPE_TagValueList     string (CSV string),          2.5.16
-
-      // (Optional)
-      DvStateVariable A_ARG_TYPE_URI = new DvStateVariable("A_ARG_TYPE_URI", new DvStandardDataType(UPnPStandardDataType.Uri))
-      {
-        SendEvents = false
-      };
-      AddStateVariable(A_ARG_TYPE_URI);
-
-      // TODO: Define
-      DvStateVariable SearchCapabilities = new DvStateVariable("SearchCapabilities", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        SendEvents = false
-      };
-      AddStateVariable(SearchCapabilities);
-
-      // TODO: Define
-      DvStateVariable SortCapabilities = new DvStateVariable("SortCapabilities", new DvStandardDataType(UPnPStandardDataType.String))
-      {
-        SendEvents = false
-      };
-      AddStateVariable(SortCapabilities);
-
-      // TODO: Define
-      // Evented, Moderated Event, Max Event Rate = 2
-      DvStateVariable SystemUpdateID = new DvStateVariable("SystemUpdateID", new DvStandardDataType(UPnPStandardDataType.Ui4))
-      {
-        SendEvents = true,
-        ModeratedMaximumRate = TimeSpan.FromSeconds(2)
-      };
-      AddStateVariable(SystemUpdateID);
-
-      // (Optional) ContainerUpdateIDs          string (CSV {string, ui4}),   2.5.21
-      // Evented, Moderated Event, Max Event Rate = 2
-
       // MediaPortal Specific State Variables
 
       // Used to transport a resource path expression
@@ -406,34 +276,12 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
 
       // More state variables go here
       
-      // Capabilities
-
-      // UPnP 1.0 - 2.7.1 GetSearchCapabilities - Required
-      DvAction getSearchCapabiltiesAction = new DvAction("GetSearchCapabilities", OnGetSearchCapabilities,
-        new DvArgument[] {
-        }, 
-          new DvArgument[] {
-            new DvArgument("SearchCaps", SearchCapabilities, ArgumentDirection.Out, true), 
-          });
-      AddAction(getSearchCapabiltiesAction);
-
-      // UPnP 1.0 - 2.7.2 GetSortCapabilities - Required
-      DvAction getSortCapabilitiesAction = new DvAction("GetSortCapabilities", OnGetSortCapabilities,
-        new DvArgument[] {
-        },
-        new DvArgument[] {
-          new DvArgument("SortCapabilities", SortCapabilities, ArgumentDirection.Out, true)
-        });
-      AddAction(getSortCapabilitiesAction);
-
-      // UPnP 1.0 Browse
+      // MPnP 1.0 Browse
       DvAction browseAction = new DvAction("Browse", OnBrowse,
           new DvArgument[] {
-            new DvArgument("ObjectId", A_ARG_TYPE_Uuid, ArgumentDirection.In),               // ParentDirectory
-            new DvArgument("BrowseFlag", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),  // NecessaryMIATypes
-            new DvArgument("Filter", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),      // OptionalMIATypes
-            new DvArgument("StartingIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
-            new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
+            new DvArgument("ObjectId", A_ARG_TYPE_Uuid, ArgumentDirection.In),
+            new DvArgument("BrowseFlag", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
+            new DvArgument("Filter", A_ARG_TYPE_UuidEnumeration, ArgumentDirection.In),
             new DvArgument("SortCriteria", A_ARG_TYPE_SortCriteria, ArgumentDirection.In), 
           },
           new DvArgument[] {
@@ -444,12 +292,11 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
           });
       AddAction(browseAction);
 
+      // MPnP 1.0 Search
       DvAction searchAction = new DvAction("Search", OnSearch,
           new DvArgument[] {
             new DvArgument("Query", A_ARG_TYPE_MediaItemQuery, ArgumentDirection.In),
             new DvArgument("OnlineState", A_ARG_TYPE_OnlineState, ArgumentDirection.In),
-            new DvArgument("StartingIndex", A_ARG_TYPE_Index, ArgumentDirection.In), 
-            new DvArgument("RequestedCount", A_ARG_TYPE_Count, ArgumentDirection.In), 
           },
           new DvArgument[] {
             new DvArgument("MediaItems", A_ARG_TYPE_MediaItems, ArgumentDirection.Out, true),
@@ -459,6 +306,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
           });
       AddAction(searchAction);
 
+      // MPnP 1.0 TextSearch
       DvAction textSearchAction = new DvAction("SimpleTextSearch", OnTextSearch,
           new DvArgument[] {
             new DvArgument("SearchText", A_ARG_TYPE_SearchText, ArgumentDirection.In),
@@ -479,6 +327,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
           });
       AddAction(textSearchAction);
 
+      // MPnP 1.0 GetValueGroups
       DvAction getValueGroupsAction = new DvAction("GetValueGroups", OnGetValueGroups,
           new DvArgument[] {
             new DvArgument("MIAType", A_ARG_TYPE_Uuid, ArgumentDirection.In),
@@ -625,43 +474,6 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
           new DvArgument[] {
           });
       AddAction(notifyPlaybackAction);
-
-      // UPnP 1.0 Capabilities
-
-      DvAction getSearchCapabilitiesAction = new DvAction("GetSearchCapabilities", OnGetSearchCapabilities,
-        new DvArgument[]
-        {
-          
-        }, 
-        new DvArgument[]
-        {
-          new DvArgument("SearchCaps", SearchCapabilities, ArgumentDirection.Out), 
-        });
-      AddAction(getSearchCapabilitiesAction);
-
-      DvAction getSortCapabilitiesAction = new DvAction("GetSortCapabilities", OnGetSortCapabilities,
-        new DvArgument[]
-        {
-          
-        }, 
-        new DvArgument[]
-        {
-          new DvArgument("SortCaps", SortCapabilities, ArgumentDirection.Out), 
-        });
-      AddAction(getSortCapabilitiesAction);
-
-      // UPnP 1.0 Polling Functions
-
-      DvAction getSystemUpdateIDAction = new DvAction("GetSystemUpdateID", OnGetSystemUpdateID,
-        new DvArgument[]
-        {
-          
-        },
-        new DvArgument[]
-        {
-          new DvArgument("Id", SystemUpdateID, ArgumentDirection.Out), 
-        });
-      AddAction(getSystemUpdateIDAction);
 
       // More actions go here
 

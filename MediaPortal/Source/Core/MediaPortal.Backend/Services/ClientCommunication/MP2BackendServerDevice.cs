@@ -22,9 +22,10 @@
 
 #endregion
 
+using MediaPortal.Backend.Services.ClientCommunication.MPnP;
 using MediaPortal.Backend.Services.UserProfileDataManagement;
-using MediaPortal.Common.Services.MPnP;
 using MediaPortal.Common.Services.ResourceAccess;
+using MediaPortal.Common.UPnP.MPnP;
 using UPnP.Infrastructure.Dv.DeviceTree;
 
 namespace MediaPortal.Backend.Services.ClientCommunication
@@ -35,11 +36,10 @@ namespace MediaPortal.Backend.Services.ClientCommunication
         MPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE, MPnPTypesAndIds.BACKEND_SERVER_DEVICE_TYPE_VERSION, deviceUuid,
         new LocalizedUPnPDeviceInformation())
     {
-      AddService(new UPnPContentDirectoryServiceImpl());
+      AddService(new MPnPContentDirectoryServiceImpl());
       AddService(new MPnPResourceInformationServiceImpl());
-      AddService(new UPnPServerControllerServiceImpl());
-      AddService(new UPnPUserProfileDataManagementServiceImpl());
-      // TODO: UPnP AV MediaServer device
+      AddService(new MPnPServerControllerServiceImpl());
+      AddService(new MPnPUserProfileDataManagementServiceImpl());
     }
   }
 }

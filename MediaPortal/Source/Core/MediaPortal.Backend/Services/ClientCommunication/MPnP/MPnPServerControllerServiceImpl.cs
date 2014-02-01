@@ -35,6 +35,7 @@ using MediaPortal.Common.Messaging;
 using MediaPortal.Common.SystemResolver;
 using MediaPortal.Common.Threading;
 using MediaPortal.Common.UPnP;
+using MediaPortal.Common.UPnP.MPnP;
 using MediaPortal.Utilities.UPnP;
 using UPnP.Infrastructure.Common;
 using UPnP.Infrastructure.Dv;
@@ -43,7 +44,7 @@ using UPnP.Infrastructure.Dv.DeviceTree;
 namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
 {
   /// <summary>
-  /// Provides the UPnP service implementation for the MediaPortal 2 server controller interface.
+  /// Provides the MPnP service implementation for the MediaPortal 2 server controller interface.
   /// </summary>
   public class MPnPServerControllerServiceImpl : DvService
   {
@@ -56,8 +57,8 @@ namespace MediaPortal.Backend.Services.ClientCommunication.MPnP
     protected AsynchronousMessageQueue _messageQueue;
 
     public MPnPServerControllerServiceImpl() : base(
-        UPnPTypesAndIds.SERVER_CONTROLLER_SERVICE_TYPE, UPnPTypesAndIds.SERVER_CONTROLLER_SERVICE_TYPE_VERSION,
-        UPnPTypesAndIds.SERVER_CONTROLLER_SERVICE_ID)
+        MPnPTypesAndIds.SERVER_CONTROLLER_SERVICE_TYPE, MPnPTypesAndIds.SERVER_CONTROLLER_SERVICE_TYPE_VERSION,
+        MPnPTypesAndIds.SERVER_CONTROLLER_SERVICE_ID)
     {
       // Used for system ID strings
       DvStateVariable A_ARG_TYPE_SystemId = new DvStateVariable("A_ARG_TYPE_SystemId", new DvStandardDataType(UPnPStandardDataType.String))

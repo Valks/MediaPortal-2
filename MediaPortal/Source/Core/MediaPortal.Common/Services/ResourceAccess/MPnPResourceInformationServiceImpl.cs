@@ -30,6 +30,7 @@ using MediaPortal.Common.MediaManagement;
 using MediaPortal.Common.ResourceAccess;
 using MediaPortal.Common.Services.MPnP;
 using MediaPortal.Common.UPnP;
+using MediaPortal.Common.UPnP.MPnP;
 using MediaPortal.Utilities.UPnP;
 using UPnP.Infrastructure.Common;
 using UPnP.Infrastructure.Dv;
