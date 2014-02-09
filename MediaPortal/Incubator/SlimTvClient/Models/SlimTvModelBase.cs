@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using MediaPortal.Common;
 using MediaPortal.Common.Commands;
+using MediaPortal.Common.General;
 using MediaPortal.Plugins.SlimTv.Client.Messaging;
 using MediaPortal.Plugins.SlimTv.Interfaces;
 using MediaPortal.Plugins.SlimTv.Interfaces.Items;
@@ -53,6 +54,9 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
     protected IList<IProgram> _programs;
     protected bool _isInitialized;
 
+    protected AbstractProperty _dialogHeaderProperty = null;
+    protected readonly ItemsList _dialogActionsList = new ItemsList();
+
     #endregion
 
     #region Constructor
@@ -75,6 +79,19 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
     public ItemsList ChannelGroupList
     {
       get { return _channelGroupList; }
+    }
+
+    /// <summary>
+    /// Gets the currently selected channel group, or <c>null</c> if not initilalized.
+    /// </summary>
+    public IChannelGroup CurrentChannelGroup
+    {
+      get
+      {
+        return _channelGroups != null && _webChannelGroupIndex < _channelGroups.Count && _webChannelGroupIndex >= 0 ? 
+          _channelGroups[_webChannelGroupIndex] : 
+          null;
+      }
     }
 
     /// <summary>
@@ -123,6 +140,18 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
     }
 
     /// <summary>
+    /// Gets the currently selected channel, or <c>null</c> if not initilalized.
+    /// </summary>
+    public IChannel CurrentChannel
+    {
+      get
+      {
+        return _channels != null && _webChannelIndex < _channels.Count && _webChannelIndex >= 0 ?
+          _channels[_webChannelIndex] : null;
+      }
+    }
+
+    /// <summary>
     /// Skips group index to next one.
     /// </summary>
     public void NextChannel()
@@ -131,11 +160,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
         return;
 
       _webChannelIndex++;
-      if (_webChannelIndex >= _channels.Count)
-        _webChannelIndex = 0;
-
-      UpdateCurrentChannel();
-      UpdatePrograms();
+      SetChannel(_webChannelIndex);
     }
 
     /// <summary>
@@ -147,11 +172,50 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
         return;
 
       _webChannelIndex--;
-      if (_webChannelIndex < 0)
-        _webChannelIndex = _channels.Count - 1;
+      SetChannel(_webChannelIndex);
+    }
+
+    /// <summary>
+    /// Sets the current channel based on the given <paramref name="webChannelIndex"/>.
+    /// </summary>
+    /// <param name="webChannelIndex">New channel index.</param>
+    protected virtual void SetChannel(int webChannelIndex)
+    {
+      if (webChannelIndex < 0)
+        webChannelIndex = _channels.Count - 1;
+
+      if (webChannelIndex >= _channels.Count)
+        webChannelIndex = 0;
+
+      _webChannelIndex = webChannelIndex;
 
       UpdateCurrentChannel();
       UpdatePrograms();
+    }
+
+    /// <summary>
+    /// Exposes the list of available series recording types or other user choices.
+    /// </summary>
+    public ItemsList DialogActionsList
+    {
+      get { return _dialogActionsList; }
+    }
+
+    /// <summary>
+    /// Exposes the user dialog header.
+    /// </summary>
+    public string DialogHeader
+    {
+      get { return (string)_dialogHeaderProperty.GetValue(); }
+      set { _dialogHeaderProperty.SetValue(value); }
+    }
+
+    /// <summary>
+    /// Exposes the user dialog header.
+    /// </summary>
+    public AbstractProperty DialogHeaderProperty
+    {
+      get { return _dialogHeaderProperty; }
     }
 
     public void ExecProgramAction(ListItem item)
@@ -179,6 +243,8 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
         _tvHandler = tvHandler;
       }
       _tvHandler.ChannelAndGroupInfo.GetChannelGroups(out _channelGroups);
+
+      _dialogHeaderProperty = new WProperty(typeof(string), string.Empty);
 
       GetCurrentChannelGroup();
       FillChannelGroupList();
@@ -233,14 +299,54 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
 
     protected void SetCurrentChannelGroup()
     {
-      if (_tvHandler.ChannelAndGroupInfo != null)
-        _tvHandler.ChannelAndGroupInfo.SelectedChannelGroupId = _channelGroups[_webChannelGroupIndex].ChannelGroupId;
+      if (_tvHandler.ChannelAndGroupInfo != null && CurrentChannelGroup != null)
+        _tvHandler.ChannelAndGroupInfo.SelectedChannelGroupId = CurrentChannelGroup.ChannelGroupId;
     }
 
     protected void SetCurrentChannel()
     {
-      if (_tvHandler.ChannelAndGroupInfo != null)
-        _tvHandler.ChannelAndGroupInfo.SelectedChannelId = _channels[_webChannelIndex].ChannelId;
+      if (_tvHandler.ChannelAndGroupInfo != null && CurrentChannel != null)
+        _tvHandler.ChannelAndGroupInfo.SelectedChannelId = CurrentChannel.ChannelId;
+    }
+
+    #endregion
+
+    #region Recording related
+
+    protected virtual RecordingStatus? CreateOrDeleteSchedule(IProgram program, ScheduleRecordingType recordingType = ScheduleRecordingType.Once)
+    {
+      IScheduleControl scheduleControl = _tvHandler.ScheduleControl;
+      RecordingStatus? newStatus = null;
+      if (scheduleControl != null)
+      {
+        RecordingStatus? recordingStatus = GetRecordingStatus(program);
+        if (!recordingStatus.HasValue)
+          return null;
+        if (recordingStatus.Value.HasFlag(RecordingStatus.Scheduled) || recordingStatus.Value.HasFlag(RecordingStatus.SeriesScheduled))
+        {
+          if (scheduleControl.RemoveScheduleForProgram(program, recordingType))
+            newStatus = RecordingStatus.None;
+        }
+        else
+        {
+          ISchedule schedule;
+          if (scheduleControl.CreateSchedule(program, recordingType, out schedule))
+            newStatus = recordingType == ScheduleRecordingType.Once ? RecordingStatus.Scheduled : RecordingStatus.SeriesScheduled;
+        }
+      }
+      return newStatus;
+    }
+
+    protected virtual RecordingStatus? GetRecordingStatus(IProgram program)
+    {
+      IScheduleControl scheduleControl = _tvHandler.ScheduleControl;
+      if (scheduleControl == null)
+        return null;
+
+      RecordingStatus recordingStatus;
+      if (scheduleControl.GetRecordingStatus(program, out recordingStatus))
+        return recordingStatus;
+      return null;
     }
 
     #endregion
@@ -252,9 +358,9 @@ namespace MediaPortal.Plugins.SlimTv.Client.Models
 
     protected virtual void UpdateChannels()
     {
-      if (_webChannelGroupIndex < _channelGroups.Count)
+      IChannelGroup group = CurrentChannelGroup;
+      if (group != null)
       {
-        IChannelGroup group = _channelGroups[_webChannelGroupIndex];
         _tvHandler.ChannelAndGroupInfo.GetChannels(group, out _channels);
 
         _webChannelIndex = 0;

@@ -38,6 +38,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Helpers
 
     public AbstractProperty ProgramIdProperty { get; set; }
     public AbstractProperty IsScheduledProperty { get; set; }
+    public AbstractProperty IsSeriesScheduledProperty { get; set; }
     public AbstractProperty TitleProperty { get; set; }
     public AbstractProperty DescriptionProperty { get; set; }
     public AbstractProperty StartTimeProperty { get; set; }
@@ -112,6 +113,15 @@ namespace MediaPortal.Plugins.SlimTv.Client.Helpers
     /// <summary>
     /// Gets or Sets an indicator if the program is scheduled or currently recording.
     /// </summary>
+    public bool IsSeriesScheduled
+    {
+      get { return (bool)IsSeriesScheduledProperty.GetValue(); }
+      set { IsSeriesScheduledProperty.SetValue(value); }
+    }
+
+    /// <summary>
+    /// Gets or Sets an indicator if the program is scheduled or currently recording.
+    /// </summary>
     public int ProgramId
     {
       get { return (int)ProgramIdProperty.GetValue(); }
@@ -122,6 +132,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Helpers
     {
       ProgramIdProperty = new WProperty(typeof(int), 0);
       IsScheduledProperty = new WProperty(typeof(bool), false);
+      IsSeriesScheduledProperty = new WProperty(typeof(bool), false);
       TitleProperty = new WProperty(typeof(String), String.Empty);
       DescriptionProperty = new WProperty(typeof(String), String.Empty);
       GenreProperty = new WProperty(typeof(String), String.Empty);
@@ -143,11 +154,19 @@ namespace MediaPortal.Plugins.SlimTv.Client.Helpers
         UpdateDuration();
     }
 
+    public void UpdateState(RecordingStatus recordingStatus)
+    {
+      IsScheduled = recordingStatus != RecordingStatus.None; // Can be single or series
+      IsSeriesScheduled = recordingStatus == RecordingStatus.SeriesScheduled;
+    }
+
     public void SetProgram(IProgram program)
     {
       IProgramRecordingStatus recordingStatus = program as IProgramRecordingStatus;
       if (recordingStatus != null)
-        IsScheduled = recordingStatus.RecordingStatus != RecordingStatus.None;
+      {
+        UpdateState(recordingStatus.RecordingStatus);
+      }
       try
       {
         _settingProgram = true;
@@ -165,7 +184,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Helpers
           ProgramId = 0;
           Title = string.Empty;
           Description = string.Empty;
-          StartTime = FormatHelper.GetDay(DateTime.Now);
+          StartTime = DateTime.Now.GetDay();
           EndTime = StartTime.AddDays(1);
           Genre = string.Empty;
         }

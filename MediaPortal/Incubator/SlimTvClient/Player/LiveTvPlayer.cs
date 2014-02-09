@@ -24,24 +24,32 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaPortal.Common;
-using MediaPortal.Common.Localization;
 using MediaPortal.Common.Logging;
+using MediaPortal.Common.MediaManagement;
+using MediaPortal.Common.ResourceAccess;
+using MediaPortal.Plugins.SlimTv.Client.Models;
 using MediaPortal.Plugins.SlimTv.Interfaces.Items;
 using MediaPortal.Plugins.SlimTv.Interfaces.LiveTvMediaItem;
 using MediaPortal.UI.Players.Video;
-using MediaPortal.UI.Players.Video.Tools;
+using MediaPortal.UI.Players.Video.Interfaces;
 using MediaPortal.UI.Presentation.Players;
+using MediaPortal.UI.Presentation.Workflow;
+using MediaPortal.UI.SkinEngine.SkinManagement;
+using SharpDX;
+using SharpDX.Direct3D9;
 
 namespace MediaPortal.Plugins.SlimTv.Client.Player
 {
-  public class LiveTvPlayer : TsVideoPlayer, IUIContributorPlayer
+  public class LiveTvPlayer : TsVideoPlayer, IUIContributorPlayer, IReusablePlayer
   {
     #region Variables
 
     protected IList<ITimeshiftContext> _timeshiftContexes;
-    protected StreamInfoHandler _chapterInfo = null;
-    protected static TimeSpan TIMESPAN_LIVE = TimeSpan.FromSeconds(1.0);
+    protected IList<IChannel> _channelHistory = null;
+    protected static TimeSpan TIMESPAN_LIVE = TimeSpan.FromMilliseconds(50);
+    protected bool _zapping; // Indicates that we are currently changing a channel.
 
     #endregion
 
@@ -66,92 +74,45 @@ namespace MediaPortal.Plugins.SlimTv.Client.Player
 
     #endregion
 
-    public ITimeshiftContext CurrentTimeshiftContext
+    public IList<ITimeshiftContext> TimeshiftContexes
     {
       get
       {
-        return GetContext(CurrentTime);
+        IList<ITimeshiftContext> timeshiftContexes = _timeshiftContexes;
+        return (timeshiftContexes != null ? new List<ITimeshiftContext>(timeshiftContexes) : new List<ITimeshiftContext>()).AsReadOnly();
       }
     }
 
-    private TimeSpan GetStartDuration(int chapterIndex)
+    private void SeekPreviousChapter()
     {
+      IList<IChannel> channelHistory;
       lock (SyncObj)
-      {
-        if (_timeshiftContexes == null || chapterIndex >= _timeshiftContexes.Count)
-          return TimeSpan.Zero;
-        return _timeshiftContexes[chapterIndex].TuneInTime - _timeshiftContexes[0].TuneInTime;
-      }
-    }
+        channelHistory = _channelHistory;
 
-    private ITimeshiftContext GetContext(TimeSpan timeSpan)
-    {
-      IList<ITimeshiftContext> timeshiftContexes;
-      lock (SyncObj)
-        timeshiftContexes = _timeshiftContexes;
-
-      if (timeshiftContexes == null)
-        return null;
-
-      TimeSpan totalTime = new TimeSpan();
-      foreach (ITimeshiftContext timeshiftContext in timeshiftContexes)
-      {
-        if (timeSpan >= totalTime && 
-          (
-            (timeSpan <= totalTime + timeshiftContext.TimeshiftDuration) || timeshiftContext.TimeshiftDuration.TotalSeconds == 0 /* currently playing */
-          ))
-          return timeshiftContext;
-        
-        totalTime += timeshiftContext.TimeshiftDuration;
-      }
-      return null;
-    }
-
-    private void SeekChapter(bool next)
-    {
-      IList<ITimeshiftContext> timeshiftContexes;
-      lock (SyncObj)
-        timeshiftContexes = _timeshiftContexes;
-
-      if (timeshiftContexes == null)
+      if (channelHistory == null || channelHistory.Count < 2)
         return;
 
-      TimeSpan timeSpan = CurrentTime;
-      TimeSpan totalTime = new TimeSpan();
-      int index = 0;
-      bool found = false;
-      foreach (ITimeshiftContext timeshiftContext in timeshiftContexes)
-      {
-        if (timeSpan >= totalTime &&
-          (
-          (timeSpan <= totalTime + timeshiftContext.TimeshiftDuration) ||
-          timeshiftContext.TimeshiftDuration.TotalSeconds == 0 /* currently playing */
-          ))
-        {
-          found = true;
-          break;
-        }
-        index++;
-        totalTime += timeshiftContext.TimeshiftDuration;
-      }
-
-      if (!found) 
-        return;
-
-      if (next && index < timeshiftContexes.Count - 1)
-        CurrentTime = GetStartDuration(index + 1);
-
-      if (!next && index > 0)
-        CurrentTime = GetStartDuration(index - 1);
+      IChannel channel = channelHistory[channelHistory.Count - 2];
+      TuneToChannel(channel);
     }
-    
+
+    private static void TuneToChannel(IChannel channel)
+    {
+      if (channel == null)
+        return;
+      IWorkflowManager workflowManager = ServiceRegistration.Get<IWorkflowManager>();
+      SlimTvClientModel model = workflowManager.GetModel(SlimTvClientModel.MODEL_ID) as SlimTvClientModel;
+      if (model != null)
+        model.Tune(channel);
+    }
+
     protected override void EnumerateChapters(bool forceRefresh)
     {
-      StreamInfoHandler chapterInfo;
+      IList<IChannel> channelHistory;
       lock (SyncObj)
-        chapterInfo = _chapterInfo;
+        channelHistory = _channelHistory;
 
-      if (chapterInfo != null && !forceRefresh)
+      if (channelHistory != null && !forceRefresh)
         return;
 
       IPlayerContextManager playerContextManager = ServiceRegistration.Get<IPlayerContextManager>();
@@ -166,13 +127,12 @@ namespace MediaPortal.Plugins.SlimTv.Client.Player
           continue;
 
         _timeshiftContexes = liveTvMediaItem.TimeshiftContexes;
-        chapterInfo = new StreamInfoHandler();
-        int i = 0;
-        foreach (ITimeshiftContext timeshiftContext in _timeshiftContexes)
-          chapterInfo.AddUnique(new StreamInfo(null, i++, GetContextTitle(timeshiftContext), 0));
+        var reversedList = new List<ITimeshiftContext>(_timeshiftContexes);
+        reversedList.Reverse();
+        channelHistory = reversedList.Select(timeshiftContext => timeshiftContext.Channel).ToList();
       }
       lock (SyncObj)
-        _chapterInfo = chapterInfo;
+        _channelHistory = channelHistory;
     }
 
     protected string GetContextTitle(ITimeshiftContext timeshiftContext)
@@ -180,27 +140,58 @@ namespace MediaPortal.Plugins.SlimTv.Client.Player
       if (timeshiftContext == null)
         return string.Empty;
 
-      string program = timeshiftContext.Program != null ? timeshiftContext.Program.Title : 
-        ServiceRegistration.Get<ILocalization>().ToString("[SlimTvClient.NoProgram]");
-      return string.Format("{0}: {1}", timeshiftContext.Channel.Name, program);
+      // We only use the channel history
+      return string.Format("{0}", timeshiftContext.Channel.Name);
     }
 
-    public void ChannelZap()
+    public void BeginZap()
+    {
+      ServiceRegistration.Get<ILogger>().Debug("{0}: Begin zapping", PlayerTitle);
+      // Set indicator for zapping to blank the video surface with black.
+      _zapping = true;
+      // Tell the TsReader that we are zapping, before we actually tune the new channel.
+      ((ITsReader)_sourceFilter).OnZapping(0x80);
+    }
+
+    public void EndZap()
     {
       SeekToEnd();
+      Resume();
 
       // Clear any subtitle that might be currently displayed
       _subtitleRenderer.Reset();
       EnumerateStreams(true);
       EnumerateChapters(true);
       SetPreferredSubtitle();
+
+      // First reset zapping indicator
+      _zapping = false;
+      // Then invalidate the "black" surface to use new frame.
+      OnTextureInvalidated();
+      ServiceRegistration.Get<ILogger>().Debug("{0}: End zapping", PlayerTitle);
+    }
+
+    public void OnProgramChange()
+    {
+      EnumerateChapters(true);
+    }
+
+    protected override void PostProcessTexture(Surface targetSurface)
+    {
+      if (_zapping)
+      {
+        // While zapping fill the current video frame with black. This avoids a frozen last frame from previous channel.
+        SkinContext.Device.ColorFill(targetSurface, Color.Black);
+      }
+      else
+        base.PostProcessTexture(targetSurface);
     }
 
     /// <summary>
     /// Checks the current stream position and seeks to end, if it is less than <see cref="TIMESPAN_LIVE"/> behind the live point.
     /// </summary>
     /// <returns><c>true</c> if seeked to end.</returns>
-    protected bool SeekToEnd ()
+    protected bool SeekToEnd()
     {
       // Call a seek only if the stream is not "live"
       if (Duration - CurrentTime > TIMESPAN_LIVE)
@@ -219,43 +210,66 @@ namespace MediaPortal.Plugins.SlimTv.Client.Player
       get
       {
         EnumerateChapters();
-        StreamInfoHandler chapters;
+        IList<IChannel> channelHistory;
         lock (SyncObj)
-          chapters = _chapterInfo;
+          channelHistory = _channelHistory;
 
-        return chapters == null || chapters.Count == 0 ? EMPTY_STRING_ARRAY : chapters.GetStreamNames();
+        return channelHistory == null || channelHistory.Count == 0 ? EMPTY_STRING_ARRAY : channelHistory.Select(c => c.Name).ToArray();
       }
     }
+
     public override void SetChapter(string chapter)
     {
-      StreamInfoHandler chapters;
+      IList<IChannel> channelHistory;
       lock (SyncObj)
-        chapters = _chapterInfo;
+        channelHistory = _channelHistory;
 
-      if (chapters == null || chapters.Count == 0)
+      if (channelHistory == null)
         return;
 
-      StreamInfo chapterInfo = chapters.FindStream(chapter);
-      if (chapterInfo != null)
-        CurrentTime = GetStartDuration(chapterInfo.StreamIndex);
+      IChannel channel = channelHistory.FirstOrDefault(c => c.Name == chapter);
+      TuneToChannel(channel);
     }
 
     public override void NextChapter()
     {
-      SeekChapter(true);
+      SeekPreviousChapter();
     }
 
     public override void PrevChapter()
     {
-      SeekChapter(false);
+      SeekPreviousChapter();
     }
 
     public override string CurrentChapter
     {
       get
       {
-        return GetContextTitle(GetContext(CurrentTime));
+        return GetContextTitle(TimeshiftContexes.LastOrDefault());
       }
+    }
+
+    #endregion
+
+    #region IReusablePlayer members
+
+    public event RequestNextItemDlgt NextItemRequest;
+
+    public bool NextItem(MediaItem mediaItem, StartTime startTime)
+    {
+      string mimeType;
+      string title;
+      if (!mediaItem.GetPlayData(out mimeType, out title) || mimeType != LiveTvMediaItem.MIME_TYPE_TV)
+      {
+        ServiceRegistration.Get<ILogger>().Debug("SlimTvHandler: Cannot reuse current player for new mimetype {0}", mimeType);
+        return false;
+      }
+      Stop();
+      // Set new resource locator for existing player, this avoids interim close of player slot
+      IResourceLocator resourceLocator = mediaItem.GetResourceLocator();
+      ServiceRegistration.Get<ILogger>().Debug("SlimTvHandler: Changing file/stream for player to {0}", resourceLocator.NativeResourcePath);
+      SetMediaItem(resourceLocator, mimeType);
+      return true;
     }
 
     #endregion

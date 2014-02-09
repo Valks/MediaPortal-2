@@ -38,11 +38,60 @@ namespace MediaPortal.Plugins.SlimTv.Interfaces
     Recording
   }
 
+  public enum ScheduleRecordingType
+  {
+    Once,
+    Daily,
+    Weekly,
+    EveryTimeOnThisChannel,
+    EveryTimeOnEveryChannel,
+    Weekends,
+    WorkingDays,
+    WeeklyEveryTimeOnThisChannel
+  }
+
   public interface IScheduleControl
   {
-    bool CreateSchedule(IProgram program, out ISchedule schedule);
-    bool RemoveSchedule(IProgram program); // ISchedule schedule ?
+    /// <summary>
+    /// Creates a single or extended series schedule.
+    /// </summary>
+    /// <param name="program">Program to record.</param>
+    /// <param name="recordingType">Schedule recording type.</param>
+    /// <param name="schedule">Returns the schedule instance.</param>
+    /// <returns><c>true</c> if successful.</returns>
+    bool CreateSchedule(IProgram program, ScheduleRecordingType recordingType, out ISchedule schedule);
+
+    /// <summary>
+    /// Deletes a schedule for the given <paramref name="program"/>. If the <paramref name="recordingType"/> is set to <see cref="ScheduleRecordingType.Once"/>,
+    /// only the actual program schedule will be removed. If any other series type is used, the full schedule will be removed (including all single schedules).
+    /// </summary>
+    /// <param name="program">Program to cancel.</param>
+    /// <param name="recordingType">Schedule recording type.</param>
+    /// <returns><c>true</c> if successful.</returns>
+    bool RemoveScheduleForProgram(IProgram program, ScheduleRecordingType recordingType); // ISchedule schedule ?
+    
+    /// <summary>
+    /// Deletes a given <paramref name="schedule"/>.
+    /// </summary>
+    /// <param name="schedule">Schedule to delete.</param>
+    /// <returns><c>true</c> if successful.</returns>
+    bool RemoveSchedule(ISchedule schedule);
+
+    /// <summary>
+    /// Gets the <paramref name="recordingStatus"/> for the given <paramref name="program"/>.
+    /// </summary>
+    /// <param name="program">Program.</param>
+    /// <param name="recordingStatus">Recording/Scheduling status.</param>
+    /// <returns><c>true</c> if successful.</returns>
     bool GetRecordingStatus(IProgram program, out RecordingStatus recordingStatus);
+
+    /// <summary>
+    /// Gets the file or stream name of currently running recording of the given <paramref name="program"/>.
+    /// </summary>
+    /// <param name="program">Program.</param>
+    /// <param name="fileOrStream">Returns the filename or stream url.</param>
+    /// <returns><c>true</c> if successful.</returns>
+    bool GetRecordingFileOrStream(IProgram program, out string fileOrStream);
 
     /// <summary>
     /// Tries to get a list of programs for the given <paramref name="schedule"/>.
@@ -53,7 +102,12 @@ namespace MediaPortal.Plugins.SlimTv.Interfaces
     bool GetProgramsForSchedule(ISchedule schedule, out IList<IProgram> programs);
 
     //bool GetSchedules(IChannel channel, out IList<ISchedule> schedules);
-    //bool GetSchedules(out IList<ISchedule> schedules);
+    /// <summary>
+    /// Gets the list of all available schedules.
+    /// </summary>
+    /// <param name="schedules">Returns schedules</param>
+    /// <returns><c>true</c> if at least one schedule could be found</returns>
+    bool GetSchedules(out IList<ISchedule> schedules);
 
     //bool AddRule(IScheduleRule rule);
     //bool RemoveRule(IScheduleRule rule);

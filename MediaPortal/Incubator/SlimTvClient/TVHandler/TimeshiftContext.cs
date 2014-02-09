@@ -40,5 +40,14 @@ namespace MediaPortal.Plugins.SlimTv.Client.TvHandler
     public TimeSpan TimeshiftDuration { get; set; }
 
     #endregion
+
+    public override string ToString()
+    {
+      return string.Format("{0}: {1} (Offset: {2}, Tune in: {3})",
+        Channel != null ? Channel.Name : "unknown", 
+        Program != null ? Program.Title : "unknown", 
+        TimeshiftDuration, 
+        TuneInTime);
+    }
   }
 }

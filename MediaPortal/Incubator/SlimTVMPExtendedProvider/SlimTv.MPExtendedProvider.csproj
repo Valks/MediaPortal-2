@@ -42,9 +42,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MPExtended.Services.Common.Interfaces, Version=0.5.0.0, Culture=neutral, PublicKeyToken=8ccaf7b9f3e31d46, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Packages\MPExtended.Services.Common.Interfaces.0.5.3\lib\net35-Client\MPExtended.Services.Common.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="MPExtended.Services.TVAccessService.Interfaces, Version=0.5.0.0, Culture=neutral, PublicKeyToken=8ccaf7b9f3e31d46, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Packages\MPExtended.Services.TVAccessService.Interfaces.0.5.3\lib\net35-Client\MPExtended.Services.TVAccessService.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -64,6 +66,7 @@
     <Compile Include="Items\ChannelGroup.cs" />
     <Compile Include="Items\Channel.cs" />
     <Compile Include="Items\Program.cs" />
+    <Compile Include="Items\Schedule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\Configuration\MPExtendedPassword.cs" />
     <Compile Include="Settings\Configuration\MPExtendedUsername.cs" />
@@ -88,8 +91,6 @@
   <ItemGroup>
     <Content Include="Language\strings_en.xml" />
     <Content Include="plugin.xml" />
-    <Content Include="References\MPExtended.Services.Common.Interfaces.dll" />
-    <Content Include="References\MPExtended.Services.TVAccessService.Interfaces.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build.targets" />

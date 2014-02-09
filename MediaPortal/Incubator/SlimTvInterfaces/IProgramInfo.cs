@@ -43,6 +43,14 @@ namespace MediaPortal.Plugins.SlimTv.Interfaces
     bool GetNowNextProgram(IChannel channel, out IProgram programNow, out IProgram programNext);
 
     /// <summary>
+    /// Tries to get the current and next program for all channels of the the given <paramref name="channelGroup"/>.
+    /// </summary>
+    /// <param name="channelGroup">Channel group</param>
+    /// <param name="nowNextPrograms">Returns programs</param>
+    /// <returns><c>true</c> if successful</returns>
+    bool GetNowAndNextForChannelGroup(IChannelGroup channelGroup, out IDictionary<int, IProgram[]> nowNextPrograms);
+
+    /// <summary>
     /// Tries to get a list of programs for the given <paramref name="channel"/> and time range.
     /// </summary>
     /// <param name="channel">Channel</param>
@@ -51,6 +59,16 @@ namespace MediaPortal.Plugins.SlimTv.Interfaces
     /// <param name="programs">Returns programs</param>
     /// <returns><c>true</c> if at least one program could be found</returns>
     bool GetPrograms(IChannel channel, DateTime from, DateTime to, out IList<IProgram> programs);
+
+    /// <summary>
+    /// Tries to get a list of programs for the given <paramref name="title"/> and time range.
+    /// </summary>
+    /// <param name="title">Program title</param>
+    /// <param name="from">Time from</param>
+    /// <param name="to">Time to</param>
+    /// <param name="programs">Returns programs</param>
+    /// <returns><c>true</c> if at least one program could be found</returns>
+    bool GetPrograms(string title, DateTime from, DateTime to, out IList<IProgram> programs);
 
     /// <summary>
     /// Tries to get a list of programs for all channels of the given <paramref name="channelGroup"/> and time range.

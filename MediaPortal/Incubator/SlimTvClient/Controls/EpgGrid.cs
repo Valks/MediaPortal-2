@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using MediaPortal.Common;
 using MediaPortal.Common.General;
 #if DEBUG_LAYOUT
@@ -73,6 +74,8 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
     protected int _groupIndex = -1;
     protected readonly object _syncObj = new object();
     protected Control _timeIndicatorControl;
+    protected Timer _timer = null;
+    protected long _updateInterval = 10000; // Update every 10 seconds
 
     #endregion
 
@@ -93,6 +96,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
       _timeIndicatorTemplateProperty = new SProperty(typeof(ControlTemplate), null);
       Attach();
       SubscribeToMessages();
+      StartTimer();
     }
 
     private void Attach()
@@ -101,6 +105,53 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
 
     private void Detach()
     {
+    }
+
+    /// <summary>
+    /// Sets the timer up to be called periodically.
+    /// </summary>
+    protected void StartTimer()
+    {
+      lock (_syncObj)
+      {
+        if (_timer != null)
+          return;
+        _timer = new Timer(OnTimerElapsed);
+        ChangeInterval(_updateInterval);
+      }
+    }
+
+    /// <summary>
+    /// Changes the timer interval.
+    /// </summary>
+    /// <param name="updateInterval">Interval in ms</param>
+    protected void ChangeInterval(long updateInterval)
+    {
+      lock (_syncObj)
+      {
+        if (_timer == null)
+          return;
+        _updateInterval = updateInterval;
+        _timer.Change(updateInterval, updateInterval);
+      }
+    }
+
+    /// <summary>
+    /// Disables the timer and blocks until the last timer event has executed.
+    /// </summary>
+    protected void StopTimer()
+    {
+      WaitHandle notifyObject;
+      lock (_syncObj)
+      {
+        if (_timer == null)
+          return;
+        notifyObject = new ManualResetEvent(false);
+        _timer.Dispose(notifyObject);
+        _timer = null;
+      }
+      notifyObject.WaitOne();
+      notifyObject.Close();
     }
 
     void SubscribeToMessages()
@@ -173,6 +224,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
     public override void Dispose()
     {
       Detach();
+      StopTimer();
       UnsubscribeFromMessages();
       MPF.TryCleanupAndDispose(HeaderTemplate);
       MPF.TryCleanupAndDispose(ProgramTemplate);
@@ -270,6 +322,20 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
       // Lock access to Children during render pass to avoid controls to be disposed during rendering.
       lock (Children.SyncRoot)
         base.RenderChildren(localRenderContext);
+    }
+
+    /// <summary>
+    /// Updates the EpgGrid's state and sets the new time indicator position.
+    /// </summary>
+    /// <param name="state"></param>
+    private void OnTimerElapsed(object state)
+    {
+      // Do not handle messages if control is not running. This is a workaround to avoid updating controls that are not used on screen.
+      // The EpgGrid is instantiated twice: via ScreenManager.LoadScreen and Control.OnTemplateChanged as copy!?
+      if (ElementState != ElementState.Running)
+        return;
+
+      SetTimeIndicator();
     }
 
     private void PrepareColumnAndRowLayout()
@@ -484,9 +550,12 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
     {
       if (program == null)
         return;
-      FrameworkElement control = Children.FirstOrDefault(el =>
+      FrameworkElement control = GetProgramItems().FirstOrDefault(el =>
       {
-        ProgramProperties programProperties = ((ProgramListItem)el.Context).Program;
+        ProgramListItem programListItem = (ProgramListItem)el.Context;
+        if (programListItem == null)
+          return false;
+        ProgramProperties programProperties = programListItem.Program;
         return programProperties != null && programProperties.ProgramId == program.ProgramId;
       });
       if (control == null)
@@ -495,7 +564,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
       // Update properties
       IProgramRecordingStatus recordingStatus = program as IProgramRecordingStatus;
       if (recordingStatus != null)
-        ((ProgramListItem)control.Context).Program.IsScheduled = recordingStatus.RecordingStatus != RecordingStatus.None;
+        ((ProgramListItem)control.Context).Program.UpdateState(recordingStatus.RecordingStatus);
     }
 
     /// <summary>
@@ -535,6 +604,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
         _timeIndicatorControl.IsVisible = true;
         SetZIndex(_timeIndicatorControl, 100);
         SetColumn(_timeIndicatorControl, currentTimeColumn);
+        _timeIndicatorControl.InvalidateLayout(true, true); // Required to arrange control on new position
       }
     }
 
@@ -559,7 +629,16 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
     /// <returns>Controls.</returns>
     private IEnumerable<Control> GetRowItems(int rowIndex)
     {
-      return Children.OfType<Control>().Where(el => el.Context is ProgramListItem && GetRow(el) == rowIndex);
+      return GetProgramItems().Where(el => GetRow(el) == rowIndex);
+    }
+
+    /// <summary>
+    /// Returns all programs from Grid.
+    /// </summary>
+    /// <returns>Controls.</returns>
+    private IEnumerable<Control> GetProgramItems()
+    {
+      return Children.OfType<Control>().Where(el => el.Context is ProgramListItem);
     }
 
     #endregion
@@ -615,7 +694,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
     {
       get
       {
-        SlimTvMultiChannelGuideModel model = (SlimTvMultiChannelGuideModel)ServiceRegistration.Get<IWorkflowManager>().GetModel(new Guid(SlimTvMultiChannelGuideModel.MODEL_ID_STR));
+        SlimTvMultiChannelGuideModel model = (SlimTvMultiChannelGuideModel)ServiceRegistration.Get<IWorkflowManager>().GetModel(SlimTvMultiChannelGuideModel.MODEL_ID);
         return model;
       }
     }
@@ -714,7 +793,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
     {
       if (!MoveFocus1(MoveFocusDirection.Right))
       {
-        SlimTvMultiChannelGuideModel.ScrollForward();
+        SlimTvMultiChannelGuideModel.Scroll(TimeSpan.FromMinutes(30));
         UpdateViewportHorizontal();
       }
       return true;
@@ -724,7 +803,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.Controls
     {
       if (!MoveFocus1(MoveFocusDirection.Left))
       {
-        SlimTvMultiChannelGuideModel.ScrollBackward();
+        SlimTvMultiChannelGuideModel.Scroll(TimeSpan.FromMinutes(-30));
         UpdateViewportHorizontal();
       }
       return true;

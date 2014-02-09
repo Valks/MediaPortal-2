@@ -308,7 +308,6 @@ namespace UPnP.Infrastructure.CP.SSDP
 
           // Multicast receiver socket - used for receiving multicast messages
           Socket socket = new Socket(family, SocketType.Dgram, ProtocolType.Udp);
-
           config.SSDP_UDP_MulticastReceiveSocket = socket;
           try
           {

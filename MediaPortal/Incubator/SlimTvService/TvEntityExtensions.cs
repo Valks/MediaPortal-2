@@ -25,10 +25,14 @@
 using System;
 using MediaPortal.Plugins.SlimTv.Interfaces;
 using MediaPortal.Plugins.SlimTv.Interfaces.Items;
-using MediaPortal.Plugins.SlimTv.Interfaces.UPnP.Items;
-using Mediaportal.TV.Server.TVDatabase.Entities.Enums;
+using Mediaportal.TV.Server.TVDatabase.Entities;
 using Mediaportal.TV.Server.TVDatabase.TVBusinessLayer.Entities;
+using Channel = MediaPortal.Plugins.SlimTv.Interfaces.UPnP.Items.Channel;
+using ChannelGroup = MediaPortal.Plugins.SlimTv.Interfaces.UPnP.Items.ChannelGroup;
 using KeepMethodType = MediaPortal.Plugins.SlimTv.Interfaces.Items.KeepMethodType;
+using Program = MediaPortal.Plugins.SlimTv.Interfaces.UPnP.Items.Program;
+using Schedule = MediaPortal.Plugins.SlimTv.Interfaces.UPnP.Items.Schedule;
+using ScheduleRecordingType = MediaPortal.Plugins.SlimTv.Interfaces.ScheduleRecordingType;
 
 namespace MediaPortal.Plugins.SlimTv.Service
 {
@@ -83,8 +87,62 @@ namespace MediaPortal.Plugins.SlimTv.Service
         EndTime = schedule.EndTime,
         ScheduleId = schedule.IdSchedule,
         ParentScheduleId = schedule.IdParentSchedule,
-        IsSeries = schedule.Series,
+        RecordingType = (ScheduleRecordingType)schedule.ScheduleType
       };
     }
+
+    //public static IProgram[] ToPrograms(this NowAndNext nowAndNext)
+    //{
+    //  if (nowAndNext == null)
+    //    return null;
+      
+    //  IProgram[] programs = new IProgram[2]; // 0: now; 1: next
+    //  programs[0] = new Program
+    //  {
+    //    ChannelId = nowAndNext.IdChannel,
+    //    ProgramId = nowAndNext.IdProgramNow,
+    //    Title = nowAndNext.TitleNow,
+    //    Description = nowAndNext.DescriptionNow,
+    //    StartTime = nowAndNext.StartTimeNow,
+    //    EndTime = nowAndNext.EndTimeNow
+    //  };
+    //  programs[1] = new Program
+    //  {
+    //    ChannelId = nowAndNext.IdChannel,
+    //    ProgramId = nowAndNext.IdProgramNext,
+    //    Title = nowAndNext.TitleNext,
+    //    Description = nowAndNext.DescriptionNext,
+    //    StartTime = nowAndNext.StartTimeNow,
+    //    EndTime = nowAndNext.StartTimeNext
+    //  };
+    //  return programs;
+    //}
+
+    // Morpheus_xx, 2014-01-03: this helper method could be used to filter programs that are CanceledSchedules, because the actual Program.State does not reflect this situation
+    // Using this extension works, but causes quite a big overhead. TVE35 should handle this situation internally.
+    //public static IEnumerable<Mediaportal.TV.Server.TVDatabase.Entities.Program> ProcessCanceledSchedules(this IEnumerable<Mediaportal.TV.Server.TVDatabase.Entities.Program> programs)
+    //{
+    //  IScheduleService scheduleService = GlobalServiceProvider.Get<IScheduleService>();
+    //  if (scheduleService == null)
+    //    yield break;
+
+    //  var allSchedules = ScheduleManagement.ListAllSchedules(ScheduleIncludeRelationEnum.CanceledSchedule);
+
+    //  foreach (Mediaportal.TV.Server.TVDatabase.Entities.Program program in programs)
+    //  {
+    //    ProgramState state = (ProgramState)program.State;
+    //    if (state.HasFlag(ProgramState.RecordSeriesPending))
+    //    {
+    //      foreach (Mediaportal.TV.Server.TVDatabase.Entities.Schedule schedule in allSchedules)
+    //      {
+    //        ScheduleBLL scheduleBll = new ScheduleBLL(schedule);
+    //        if (scheduleBll.IsSerieIsCanceled(program.StartTime, program.IdChannel))
+    //          program.State = 0;
+    //      }
+    //    }
+    //    yield return program;
+    //  }
+    //}
+
   }
 }

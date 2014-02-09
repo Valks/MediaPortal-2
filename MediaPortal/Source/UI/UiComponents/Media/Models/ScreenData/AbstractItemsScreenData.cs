@@ -226,10 +226,24 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
               viewsList.Sort((v1, v2) => string.Compare(v1.SortString, v2.SortString));
               CollectionUtils.AddAll(items, viewsList);
 
-              lock (_syncObj)
-                if (_listDirty)
-                  goto RebuildView;
+                List<NavigationItem> viewsList = new List<NavigationItem>();
+                foreach (View sv in subViews)
+                {
+                  ViewItem item = new ViewItem(sv, null, sv.AbsNumItems);
+                  View subView = sv;
+                  item.Command = new MethodDelegateCommand(() => NavigateToView(subView.Specification));
+                  viewsList.Add(item);
+                  if (sv.AbsNumItems.HasValue)
+                    totalNumItems += sv.AbsNumItems.Value;
+                }
+                // Morpheus_xx, 2014-01-27: Commented the sorting call, as it overrides the sorting of the SubViews list. This is required for cases
+                // where sorting is not done by name, but i.e. by "max date" of group of items (stacking view, sorted by max date).
+                // viewsList.Sort((v1, v2) => string.Compare(v1.SortString, v2.SortString));
+                CollectionUtils.AddAll(items, viewsList);
 
+                lock (_syncObj)
+                  if (_listDirty)
+                    goto RebuildView;
               PlayableItemCreatorDelegate picd = PlayableItemCreator;
               List<PlayableMediaItem> itemsList = mediaItems.Select(childItem => picd(childItem)).Where(item => item != null).ToList();
               Sorting.Sorting sorting = CurrentSorting;
