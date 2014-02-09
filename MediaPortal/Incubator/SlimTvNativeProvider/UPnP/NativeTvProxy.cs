@@ -81,9 +81,14 @@ namespace MediaPortal.Plugins.SlimTv.Providers.UPnP
       try
       {
         CpAction action = GetAction(Consts.ACTION_DEINIT);
-        IList<object> inParameters = new List<object>();
-        IList<object> outParameters = action.InvokeAction(inParameters);
-        return (bool) outParameters[0];
+        // DeInit will also be called if the service is disposed after server disconnection. In this case we cannot call another action.
+        if (action.IsConnected && action.ParentService != null && action.ParentService.IsConnected)
+        {
+          IList<object> inParameters = new List<object>();
+          IList<object> outParameters = action.InvokeAction(inParameters);
+          return (bool)outParameters[0];
+        }
+        return false;
       }
       catch (Exception ex)
       {
@@ -364,18 +369,21 @@ namespace MediaPortal.Plugins.SlimTv.Providers.UPnP
       }
     }
 
-    public bool CreateSchedule(IProgram program)
+    public bool CreateSchedule(IProgram program, out ISchedule schedule)
     {
       try
       {
         CpAction action = GetAction(Consts.ACTION_CREATE_SCHEDULE);
         IList<object> inParameters = new List<object> { program.ProgramId };
         IList<object> outParameters = action.InvokeAction(inParameters);
-        return (bool) outParameters[0];
+        bool result = (bool)outParameters[0];
+        schedule = result ? (ISchedule)outParameters[1] : null;
+        return result;
       }
       catch (Exception ex)
       {
         NotifyException(ex);
+        schedule = null;
         return false;
       }
     }
