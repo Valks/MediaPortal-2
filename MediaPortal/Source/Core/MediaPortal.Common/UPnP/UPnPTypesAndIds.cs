@@ -31,7 +31,7 @@ namespace MediaPortal.Common.UPnP
   {
     // Backend
     // Need to verify
-    public const string BACKEND_SERVER_DEVICE_TYPE = "schemas-team-mediaportal-com:device:MP2-Server";
+    public const string BACKEND_SERVER_DEVICE_TYPE = "schemas-upnp-org:device:MP2-Server";
     public const int BACKEND_SERVER_DEVICE_TYPE_VERSION = 1;
 
     public const string CONTENT_DIRECTORY_SERVICE_TYPE = "schemas-upnp-org:service:ContentDirectory";

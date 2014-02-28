@@ -44,26 +44,25 @@ using MediaPortal.Common.MediaManagement.DefaultItemAspects;
 namespace MediaPortal.Backend.Services.ClientCommunication
 {
   /// <summary>
-  /// Provides the UPnP service for the MediaPortal 2 content directory.
+  /// Provides a base implementation of the UPnP ContentDirectory Service.
   /// </summary>
   /// <remarks>
-  /// This service works similar to the ContentDirectory service of the UPnP standard MediaServer device, but it uses a bit
-  /// different data structure for media items, so it isn't compatible with the standard ContentDirectory service. It also
-  /// provides special actions to manage shares and media item aspect metadata schemas.
+  /// This class provides the basic functions for a UPnP ContentDirectory Service. Extend this class to add non-upnp specific
+  /// functions.
   /// </remarks>
   public class UPnPContentDirectoryServiceImpl : DvService
   {
     //protected AsynchronousMessageQueue _messageQueue;
 
-    protected DvStateVariable PlaylistsChangeCounter;
-    protected DvStateVariable MIATypeRegistrationsChangeCounter;
-    protected DvStateVariable CurrentlyImportingSharesChangeCounter;
-    protected DvStateVariable RegisteredSharesChangeCounter;
+    //protected DvStateVariable PlaylistsChangeCounter;
+    //protected DvStateVariable MIATypeRegistrationsChangeCounter;
+    //protected DvStateVariable CurrentlyImportingSharesChangeCounter;
+    //protected DvStateVariable RegisteredSharesChangeCounter;
 
-    protected UInt32 _playlistsChangeCt = 0;
-    protected UInt32 _miaTypeRegistrationsChangeCt = 0;
-    protected UInt32 _currentlyImportingSharesChangeCt = 0;
-    protected UInt32 _registeredSharesChangeCt = 0;
+    //protected UInt32 _playlistsChangeCt = 0;
+    //protected UInt32 _miaTypeRegistrationsChangeCt = 0;
+    //protected UInt32 _currentlyImportingSharesChangeCt = 0;
+    //protected UInt32 _registeredSharesChangeCt = 0;
 
 
     public UPnPContentDirectoryServiceImpl() : this(
@@ -111,6 +110,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       //  Evented = true (Not Moderated)
 
       // Used for several parameters
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_ObjectId = new DvStateVariable("A_ARG_TYPE_ObjectId", new DvStandardDataType(UPnPStandardDataType.String))
       {
         SendEvents = false
@@ -118,6 +118,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_ObjectId);
 
       // Used for several return values
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_Result = new DvStateVariable("A_ARG_TYPE_Result", new DvStandardDataType(UPnPStandardDataType.String))
       {
         SendEvents = false
@@ -125,6 +126,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_Result);
 
       // (Optional) A_ARG_TYPE_SearchCriteria   string,                       2.5.5
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_SearchCriteria = new DvStateVariable("A_ARG_TYPE_SearchCriteria", new DvStandardDataType(UPnPStandardDataType.String))
       {
         SendEvents = false
@@ -132,6 +134,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_SearchCriteria);
 
       // Used for several parameters
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_BrowseFlag = new DvStateVariable("A_ARG_TYPE_BrowseFlag", new DvStandardDataType(UPnPStandardDataType.String))
       {
         AllowedValueList = new string[] { "BrowseMetadata", "BrowseDirectChildren" },
@@ -140,6 +143,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_BrowseFlag);
 
       // Used for several parameters
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_Filter = new DvStateVariable("A_ARG_TYPE_Filter", new DvStandardDataType(UPnPStandardDataType.String))
       {
         SendEvents = false
@@ -147,6 +151,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_Filter);
 
       // Used for several parameters
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_SortCriteria = new DvStateVariable("A_ARG_TYPE_SortCriteria", new DvStandardDataType(UPnPStandardDataType.String))
       {
         SendEvents = false
@@ -154,6 +159,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_SortCriteria);
 
       // Used for several parameters
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_Index = new DvStateVariable("A_ARG_TYPE_Index", new DvStandardDataType(UPnPStandardDataType.Ui4))
       {
         SendEvents = false
@@ -161,6 +167,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_Index);
 
       // Used for several parameters and result values
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_Count = new DvStateVariable("A_ARG_TYPE_Count", new DvStandardDataType(UPnPStandardDataType.Ui4))
           {
             SendEvents = false
@@ -168,6 +175,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_Count);
 
       // Used to indicate a change has occured,
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_UpdateID = new DvStateVariable("A_ARG_TYPE_UpdateID", new DvStandardDataType(UPnPStandardDataType.Ui4));
       AddStateVariable(A_ARG_TYPE_UpdateID);
 
@@ -178,6 +186,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       // (Optional) A_ARG_TYPE_TagValueList     string (CSV string),          2.5.16
 
       // (Optional)
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable A_ARG_TYPE_URI = new DvStateVariable("A_ARG_TYPE_URI", new DvStandardDataType(UPnPStandardDataType.Uri))
       {
         SendEvents = false
@@ -185,6 +194,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(A_ARG_TYPE_URI);
 
       // TODO: Define
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable SearchCapabilities = new DvStateVariable("SearchCapabilities", new DvStandardDataType(UPnPStandardDataType.String))
       {
         SendEvents = false
@@ -192,6 +202,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
       AddStateVariable(SearchCapabilities);
 
       // TODO: Define
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable SortCapabilities = new DvStateVariable("SortCapabilities", new DvStandardDataType(UPnPStandardDataType.String))
       {
         SendEvents = false
@@ -200,6 +211,7 @@ namespace MediaPortal.Backend.Services.ClientCommunication
 
       // TODO: Define
       // Evented, Moderated Event, Max Event Rate = 2
+// ReSharper disable once InconsistentNaming - Following UPnP 1.0 standards variable naming convention.
       DvStateVariable SystemUpdateID = new DvStateVariable("SystemUpdateID", new DvStandardDataType(UPnPStandardDataType.Ui4))
       {
         SendEvents = true,
@@ -344,248 +356,303 @@ namespace MediaPortal.Backend.Services.ClientCommunication
     //  }
     //}
 
-    static UPnPError ParseOnlineState(string argumentName, string onlineStateStr, out bool all)
+    #region MP2 specific, marked for removal
+
+    //static UPnPError ParseOnlineState(string argumentName, string onlineStateStr, out bool all)
+    //{
+    //  switch (onlineStateStr)
+    //  {
+    //    case "All":
+    //      all = true;
+    //      break;
+    //    case "OnlyOnline":
+    //      all = false;
+    //      break;
+    //    default:
+    //      all = true;
+    //      return new UPnPError(600, string.Format("Argument '{0}' must be of value 'All' or 'OnlyOnline'", argumentName));
+    //  }
+    //  return null;
+    //}
+
+    //static UPnPError ParseSearchMode(string argumentName, string searchModeStr, out bool excludeCLOBs)
+    //{
+    //  switch (searchModeStr)
+    //  {
+    //    case "Normal":
+    //      excludeCLOBs = false;
+    //      break;
+    //    case "ExcludeCLOBs":
+    //      excludeCLOBs = true;
+    //      break;
+    //    default:
+    //      excludeCLOBs = true;
+    //      return new UPnPError(600, string.Format("Argument '{0}' must be of value 'Normal' or 'ExcludeCLOBs'", argumentName));
+    //  }
+    //  return null;
+    //}
+
+    //static UPnPError ParseCapitalizationMode(string argumentName, string searchModeStr, out bool caseSensitive)
+    //{
+    //  switch (searchModeStr)
+    //  {
+    //    case "CaseSensitive":
+    //      caseSensitive = true;
+    //      break;
+    //    case "CaseInsensitive":
+    //      caseSensitive = false;
+    //      break;
+    //    default:
+    //      caseSensitive = true;
+    //      return new UPnPError(600, string.Format("Argument '{0}' must be of value 'CaseSensitive' or 'CaseInsensitive'", argumentName));
+    //  }
+    //  return null;
+    //}
+
+    //static UPnPError ParseProjectionFunction(string argumentName, string projectionFunctionStr, out ProjectionFunction projectionFunction)
+    //{
+    //  switch (projectionFunctionStr)
+    //  {
+    //    case "None":
+    //      projectionFunction = ProjectionFunction.None;
+    //      break;
+    //    case "DateToYear":
+    //      projectionFunction = ProjectionFunction.DateToYear;
+    //      break;
+    //    default:
+    //      projectionFunction = ProjectionFunction.None;
+    //      return new UPnPError(600, string.Format("Argument '{0}' must be of value 'DateToYear' or 'None'", argumentName));
+    //  }
+    //  return null;
+    //}
+
+    //static UPnPError ParseGroupingFunction(string argumentName, string groupingFunctionStr, out GroupingFunction groupingFunction)
+    //{
+    //  switch (groupingFunctionStr)
+    //  {
+    //    case "FirstCharacter":
+    //      groupingFunction = GroupingFunction.FirstCharacter;
+    //      break;
+    //    default:
+    //      groupingFunction = GroupingFunction.FirstCharacter;
+    //      return new UPnPError(600, string.Format("Argument '{0}' must be of value 'FirstCharacter'", argumentName));
+    //  }
+    //  return null;
+    //}
+
+    //static UPnPError ParseRelocationMode(string argumentName, string relocateMediaItemsStr, out RelocationMode relocationMode)
+    //{
+    //  switch (relocateMediaItemsStr)
+    //  {
+    //    case "None":
+    //      relocationMode = RelocationMode.None;
+    //      break;
+    //    case "Relocate":
+    //      relocationMode = RelocationMode.Relocate;
+    //      break;
+    //    case "ClearAndReImport":
+    //      relocationMode = RelocationMode.Remove;
+    //      break;
+    //    default:
+    //      relocationMode = RelocationMode.Remove;
+    //      return new UPnPError(600, string.Format("Argument '{0}' must be of value 'Relocate' or 'ClearAndReImport'", argumentName));
+    //  }
+    //  return null;
+    //}
+
+    // static UPnPError OnRegisterShare(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  Share share = (Share) inParams[0];
+    //  ServiceRegistration.Get<IMediaLibrary>().RegisterShare(share);
+    //  outParams = null;
+    //  return null;
+    //}
+
+    //static UPnPError OnRemoveShare(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
+    //  ServiceRegistration.Get<IMediaLibrary>().RemoveShare(shareId);
+    //  outParams = null;
+    //  return null;
+    //}
+
+    //static UPnPError OnUpdateShare(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
+    //  ResourcePath baseResourcePath = ResourcePath.Deserialize((string) inParams[1]);
+    //  string shareName = (string) inParams[2];
+    //  string[] mediaCategories = ((string) inParams[3]).Split(',');
+    //  string relocateMediaItemsStr = (string) inParams[4];
+    //  RelocationMode relocationMode;
+    //  UPnPError error = ParseRelocationMode("RelocateMediaItems", relocateMediaItemsStr, out relocationMode);
+    //  if (error != null)
+    //  {
+    //    outParams = null;
+    //    return error;
+    //  }
+    //  IMediaLibrary mediaLibrary = ServiceRegistration.Get<IMediaLibrary>();
+    //  int numAffected = mediaLibrary.UpdateShare(shareId, baseResourcePath, shareName, mediaCategories, relocationMode);
+    //  outParams = new List<object> {numAffected};
+    //  return null;
+    //}
+
+    //static UPnPError OnGetShares(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  string systemId = (string) inParams[0];
+    //  string sharesFilterStr = (string) inParams[1];
+    //  bool all;
+    //  UPnPError error = ParseOnlineState("SharesFilter", sharesFilterStr, out all);
+    //  if (error != null)
+    //  {
+    //    outParams = null;
+    //    return error;
+    //  }
+    //  IDictionary<Guid, Share> shares = ServiceRegistration.Get<IMediaLibrary>().GetShares(systemId);
+    //  ICollection<Share> result;
+    //  if (all)
+    //    result = shares.Values;
+    //  else
+    //  {
+    //    ICollection<string> connectedClientsIds = ServiceRegistration.Get<IClientManager>().ConnectedClients.Select(
+    //        connection => connection.Descriptor.MPFrontendServerUUID).ToList();
+    //    result = new List<Share>();
+    //    foreach (Share share in shares.Values)
+    //      if (connectedClientsIds.Contains(share.SystemId))
+    //        result.Add(share);
+    //  }
+    //  outParams = new List<object> {result};
+    //  return null;
+    //}
+
+    //static UPnPError OnGetShare(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
+    //  Share result = ServiceRegistration.Get<IMediaLibrary>().GetShare(shareId);
+    //  outParams = new List<object> {result};
+    //  return null;
+    //}
+
+    //static UPnPError OnReImportShare(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
+    //  Share share = ServiceRegistration.Get<IMediaLibrary>().GetShare(shareId);
+    //  ServiceRegistration.Get<IImporterWorker>().ScheduleRefresh(share.BaseResourcePath, share.MediaCategories, true);
+    //  outParams = null;
+    //  return null;
+    //}
+
+    //static UPnPError OnSetupDefaultServerShares(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  ServiceRegistration.Get<IMediaLibrary>().SetupDefaultLocalShares();
+    //  outParams = null;
+    //  return null;
+    //}
+
+    //static UPnPError OnAddMediaItemAspectStorage(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  MediaItemAspectMetadata miam = (MediaItemAspectMetadata) inParams[0];
+    //  ServiceRegistration.Get<IMediaLibrary>().AddMediaItemAspectStorage(miam);
+    //  outParams = null;
+    //  return null;
+    //}
+
+    //static UPnPError OnRemoveMediaItemAspectStorage(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  Guid aspectId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
+    //  ServiceRegistration.Get<IMediaLibrary>().RemoveMediaItemAspectStorage(aspectId);
+    //  outParams = null;
+    //  return null;
+    //}
+
+    //static UPnPError OnGetAllManagedMediaItemAspectTypes(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  ICollection<Guid> result = ServiceRegistration.Get<IMediaLibrary>().GetManagedMediaItemAspectMetadata().Keys;
+    //  outParams = new List<object> {MarshallingHelper.SerializeGuidEnumerationToCsv(result)};
+    //  return null;
+    //}
+
+    //static UPnPError OnGetMediaItemAspectMetadata(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  Guid aspectId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
+    //  MediaItemAspectMetadata miam = ServiceRegistration.Get<IMediaLibrary>().GetManagedMediaItemAspectMetadata(aspectId);
+    //  outParams = new List<object> {miam};
+    //  return null;
+    //}
+
+    //static UPnPError OnLoadItem(DvAction action, IList<object> inParams, out IList<object> outParams,
+    //    CallContext context)
+    //{
+    //  string systemId = (string) inParams[0];
+    //  ResourcePath path = ResourcePath.Deserialize((string) inParams[1]);
+    //  IEnumerable<Guid> necessaryMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[2]);
+    //  IEnumerable<Guid> optionalMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[3]);
+    //  MediaItem mediaItem = ServiceRegistration.Get<IMediaLibrary>().LoadItem(systemId, path,
+    //      necessaryMIATypes, optionalMIATypes);
+    //  outParams = new List<object> {mediaItem};
+    //  return null;
+    //}
+
+    #endregion
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="inParams"></param>
+    /// <param name="outParams"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    static UPnPError OnGetSearchCapabilities(DvAction action, IList<object> inParams, out IList<object> outParams, CallContext context)
     {
-      switch (onlineStateStr)
+      outParams = new List<object>
       {
-        case "All":
-          all = true;
-          break;
-        case "OnlyOnline":
-          all = false;
-          break;
-        default:
-          all = true;
-          return new UPnPError(600, string.Format("Argument '{0}' must be of value 'All' or 'OnlyOnline'", argumentName));
-      }
+        "", // fields which can be used to sort, examples: dc:title,dc:creator,dc:date,res@size
+      };
       return null;
     }
 
-    static UPnPError ParseSearchMode(string argumentName, string searchModeStr, out bool excludeCLOBs)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="inParams"></param>
+    /// <param name="outParams"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    static UPnPError OnGetSortCapabilities(DvAction action, IList<object> inParams, out IList<object> outParams, CallContext context)
     {
-      switch (searchModeStr)
+      outParams = new List<object>
       {
-        case "Normal":
-          excludeCLOBs = false;
-          break;
-        case "ExcludeCLOBs":
-          excludeCLOBs = true;
-          break;
-        default:
-          excludeCLOBs = true;
-          return new UPnPError(600, string.Format("Argument '{0}' must be of value 'Normal' or 'ExcludeCLOBs'", argumentName));
-      }
+        "", // fields which can be used to sort, examples: dc:title,dc:creator,dc:date,res@size
+      };
       return null;
     }
 
-    static UPnPError ParseCapitalizationMode(string argumentName, string searchModeStr, out bool caseSensitive)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="inParams"></param>
+    /// <param name="outParams"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    static UPnPError OnGetSystemUpdateID(DvAction action, IList<object> inParams, out IList<object> outParams, CallContext context)
     {
-      switch (searchModeStr)
+      outParams = new List<object>
       {
-        case "CaseSensitive":
-          caseSensitive = true;
-          break;
-        case "CaseInsensitive":
-          caseSensitive = false;
-          break;
-        default:
-          caseSensitive = true;
-          return new UPnPError(600, string.Format("Argument '{0}' must be of value 'CaseSensitive' or 'CaseInsensitive'", argumentName));
-      }
-      return null;
-    }
-
-    static UPnPError ParseProjectionFunction(string argumentName, string projectionFunctionStr, out ProjectionFunction projectionFunction)
-    {
-      switch (projectionFunctionStr)
-      {
-        case "None":
-          projectionFunction = ProjectionFunction.None;
-          break;
-        case "DateToYear":
-          projectionFunction = ProjectionFunction.DateToYear;
-          break;
-        default:
-          projectionFunction = ProjectionFunction.None;
-          return new UPnPError(600, string.Format("Argument '{0}' must be of value 'DateToYear' or 'None'", argumentName));
-      }
-      return null;
-    }
-
-    static UPnPError ParseGroupingFunction(string argumentName, string groupingFunctionStr, out GroupingFunction groupingFunction)
-    {
-      switch (groupingFunctionStr)
-      {
-        case "FirstCharacter":
-          groupingFunction = GroupingFunction.FirstCharacter;
-          break;
-        default:
-          groupingFunction = GroupingFunction.FirstCharacter;
-          return new UPnPError(600, string.Format("Argument '{0}' must be of value 'FirstCharacter'", argumentName));
-      }
-      return null;
-    }
-
-    static UPnPError ParseRelocationMode(string argumentName, string relocateMediaItemsStr, out RelocationMode relocationMode)
-    {
-      switch (relocateMediaItemsStr)
-      {
-        case "None":
-          relocationMode = RelocationMode.None;
-          break;
-        case "Relocate":
-          relocationMode = RelocationMode.Relocate;
-          break;
-        case "ClearAndReImport":
-          relocationMode = RelocationMode.Remove;
-          break;
-        default:
-          relocationMode = RelocationMode.Remove;
-          return new UPnPError(600, string.Format("Argument '{0}' must be of value 'Relocate' or 'ClearAndReImport'", argumentName));
-      }
-      return null;
-    }
-
-     static UPnPError OnRegisterShare(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      Share share = (Share) inParams[0];
-      ServiceRegistration.Get<IMediaLibrary>().RegisterShare(share);
-      outParams = null;
-      return null;
-    }
-
-    static UPnPError OnRemoveShare(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      ServiceRegistration.Get<IMediaLibrary>().RemoveShare(shareId);
-      outParams = null;
-      return null;
-    }
-
-    static UPnPError OnUpdateShare(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      ResourcePath baseResourcePath = ResourcePath.Deserialize((string) inParams[1]);
-      string shareName = (string) inParams[2];
-      string[] mediaCategories = ((string) inParams[3]).Split(',');
-      string relocateMediaItemsStr = (string) inParams[4];
-      RelocationMode relocationMode;
-      UPnPError error = ParseRelocationMode("RelocateMediaItems", relocateMediaItemsStr, out relocationMode);
-      if (error != null)
-      {
-        outParams = null;
-        return error;
-      }
-      IMediaLibrary mediaLibrary = ServiceRegistration.Get<IMediaLibrary>();
-      int numAffected = mediaLibrary.UpdateShare(shareId, baseResourcePath, shareName, mediaCategories, relocationMode);
-      outParams = new List<object> {numAffected};
-      return null;
-    }
-
-    static UPnPError OnGetShares(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      string systemId = (string) inParams[0];
-      string sharesFilterStr = (string) inParams[1];
-      bool all;
-      UPnPError error = ParseOnlineState("SharesFilter", sharesFilterStr, out all);
-      if (error != null)
-      {
-        outParams = null;
-        return error;
-      }
-      IDictionary<Guid, Share> shares = ServiceRegistration.Get<IMediaLibrary>().GetShares(systemId);
-      ICollection<Share> result;
-      if (all)
-        result = shares.Values;
-      else
-      {
-        ICollection<string> connectedClientsIds = ServiceRegistration.Get<IClientManager>().ConnectedClients.Select(
-            connection => connection.Descriptor.MPFrontendServerUUID).ToList();
-        result = new List<Share>();
-        foreach (Share share in shares.Values)
-          if (connectedClientsIds.Contains(share.SystemId))
-            result.Add(share);
-      }
-      outParams = new List<object> {result};
-      return null;
-    }
-
-    static UPnPError OnGetShare(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      Share result = ServiceRegistration.Get<IMediaLibrary>().GetShare(shareId);
-      outParams = new List<object> {result};
-      return null;
-    }
-
-    static UPnPError OnReImportShare(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      Guid shareId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      Share share = ServiceRegistration.Get<IMediaLibrary>().GetShare(shareId);
-      ServiceRegistration.Get<IImporterWorker>().ScheduleRefresh(share.BaseResourcePath, share.MediaCategories, true);
-      outParams = null;
-      return null;
-    }
-
-    static UPnPError OnSetupDefaultServerShares(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      ServiceRegistration.Get<IMediaLibrary>().SetupDefaultLocalShares();
-      outParams = null;
-      return null;
-    }
-
-    static UPnPError OnAddMediaItemAspectStorage(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      MediaItemAspectMetadata miam = (MediaItemAspectMetadata) inParams[0];
-      ServiceRegistration.Get<IMediaLibrary>().AddMediaItemAspectStorage(miam);
-      outParams = null;
-      return null;
-    }
-
-    static UPnPError OnRemoveMediaItemAspectStorage(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      Guid aspectId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      ServiceRegistration.Get<IMediaLibrary>().RemoveMediaItemAspectStorage(aspectId);
-      outParams = null;
-      return null;
-    }
-
-    static UPnPError OnGetAllManagedMediaItemAspectTypes(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      ICollection<Guid> result = ServiceRegistration.Get<IMediaLibrary>().GetManagedMediaItemAspectMetadata().Keys;
-      outParams = new List<object> {MarshallingHelper.SerializeGuidEnumerationToCsv(result)};
-      return null;
-    }
-
-    static UPnPError OnGetMediaItemAspectMetadata(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      Guid aspectId = MarshallingHelper.DeserializeGuid((string) inParams[0]);
-      MediaItemAspectMetadata miam = ServiceRegistration.Get<IMediaLibrary>().GetManagedMediaItemAspectMetadata(aspectId);
-      outParams = new List<object> {miam};
-      return null;
-    }
-
-    static UPnPError OnLoadItem(DvAction action, IList<object> inParams, out IList<object> outParams,
-        CallContext context)
-    {
-      string systemId = (string) inParams[0];
-      ResourcePath path = ResourcePath.Deserialize((string) inParams[1]);
-      IEnumerable<Guid> necessaryMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[2]);
-      IEnumerable<Guid> optionalMIATypes = MarshallingHelper.ParseCsvGuidCollection((string) inParams[3]);
-      MediaItem mediaItem = ServiceRegistration.Get<IMediaLibrary>().LoadItem(systemId, path,
-          necessaryMIATypes, optionalMIATypes);
-      outParams = new List<object> {mediaItem};
+        0, // SystemUpdateID, always zero unless someone wishes to implement it.
+      };
       return null;
     }
 

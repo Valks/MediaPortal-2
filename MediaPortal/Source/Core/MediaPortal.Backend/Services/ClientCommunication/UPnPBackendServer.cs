@@ -35,8 +35,8 @@ namespace MediaPortal.Backend.Services.ClientCommunication
 
     public UPnPBackendServer(string backendServerSystemId)
     {
+      //AddRootDevice(new MPnPBackendServerDevice(backendServerSystemId));
       AddRootDevice(new UPnPBackendServerDevice(backendServerSystemId));
-      AddRootDevice(new MP2BackendServerDevice(backendServerSystemId));
     }
 
     public void Start()
