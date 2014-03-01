@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaPortal.Common.MediaManagement;
 using MediaPortal.Common.MediaManagement.DefaultItemAspects;
+using Okra.Data;
 
 namespace MediaPortal.UiComponents.Media.Views
 {
@@ -112,13 +113,16 @@ namespace MediaPortal.UiComponents.Media.Views
     /// <summary>
     /// Returns all media items of this view and all sub views. Can be overridden to provide a more efficient implementation.
     /// </summary>
-    /// <returns>Enumeration of all media items of this and all sub views.</returns>
-    public virtual IEnumerable<MediaItem> GetAllMediaItems()
+    /// <returns>IList of all media items of this and all sub views.</returns>
+    public virtual IList<MediaItem> GetAllMediaItems()
     {
       IList<MediaItem> mis;
       IList<ViewSpecification> vss;
       ReLoadItemsAndSubViewSpecifications(out mis, out vss);
-      return vss.SelectMany(subViewSpecification => subViewSpecification.GetAllMediaItems()).Union(mis);
+      return new VirtualizingDataList<MediaItem>(
+        new GenericPagedDataListSource<MediaItem>(
+          vss.AsQueryable().SelectMany(subViewSpecifications => subViewSpecifications.GetAllMediaItems())
+          .Union(mis.AsQueryable())));
     }
 
     /// <summary>

@@ -109,7 +109,7 @@ namespace MediaPortal.UiComponents.Media.Views
       return new RemovableDriveChangeNotificator(_driveInfo.Name);
     }
 
-    public override IEnumerable<MediaItem> GetAllMediaItems()
+    public override IList<MediaItem> GetAllMediaItems()
     {
       return _removableDriveHandler.GetAllMediaItems();
     }

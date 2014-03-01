@@ -65,6 +65,6 @@ namespace MediaPortal.UiComponents.Media.Views.RemovableMediaDrives
 
     public abstract IList<MediaItem> MediaItems { get; }
     public abstract IList<ViewSpecification> SubViewSpecifications { get; }
-    public abstract IEnumerable<MediaItem> GetAllMediaItems();
+    public abstract IList<MediaItem> GetAllMediaItems();
   }
 }

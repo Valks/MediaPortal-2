@@ -46,9 +46,9 @@ namespace MediaPortal.UiComponents.Media.Views.RemovableMediaDrives
       get { return new List<ViewSpecification>(0); }
     }
 
-    public override IEnumerable<MediaItem> GetAllMediaItems()
+    public override IList<MediaItem> GetAllMediaItems()
     {
-      yield break;
+      return MediaItems;
     }
   }
 }

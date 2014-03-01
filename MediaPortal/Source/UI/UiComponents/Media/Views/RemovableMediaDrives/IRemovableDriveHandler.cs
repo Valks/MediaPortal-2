@@ -70,9 +70,9 @@ namespace MediaPortal.UiComponents.Media.Views.RemovableMediaDrives
     IList<ViewSpecification> SubViewSpecifications { get; }
 
     /// <summary>
-    /// Returns all media items of the root and recursively of all view specifications of this drive.
+    /// Returns a list of all media items of the root and recursively of all view specifications of this drive.
     /// </summary>
-    /// <returns>Enumeration of media items.</returns>
-    IEnumerable<MediaItem> GetAllMediaItems();
+    /// <returns>IList of media items.</returns>
+    IList<MediaItem> GetAllMediaItems();
   }
 }

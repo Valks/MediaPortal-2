@@ -25,6 +25,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using MediaPortal.Common.General;
+using Okra.Data;
 
 namespace MediaPortal.UI.Presentation.DataObjects
 {
@@ -34,7 +35,7 @@ namespace MediaPortal.UI.Presentation.DataObjects
   /// </summary>
   public class ItemsList : IList<ListItem>, IObservable, ISynchronizable
   {
-    protected SynchronizedCollection<ListItem> _backingList = new SynchronizedCollection<ListItem>();
+    protected VirtualizingDataList<ListItem> _backingList;
     protected WeakEventMulticastDelegate _objectChanged = new WeakEventMulticastDelegate();
 
     /// <summary>
@@ -55,6 +56,15 @@ namespace MediaPortal.UI.Presentation.DataObjects
     {
       get { return _backingList.SyncRoot; }
     }
+
+    #region Constructor
+
+    public ItemsList(IDataListSource<ListItem> dataSource)
+    {
+      _backingList = new VirtualizingDataList<ListItem>(dataSource);
+    }
+
+    #endregion
 
     #region IEnumerable implementation
 

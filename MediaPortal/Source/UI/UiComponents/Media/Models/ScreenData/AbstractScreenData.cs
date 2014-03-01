@@ -23,12 +23,14 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Linq;
 using MediaPortal.Common.General;
 using MediaPortal.Common.Localization;
 using MediaPortal.Common.MediaManagement;
 using MediaPortal.UI.Presentation.DataObjects;
 using MediaPortal.UiComponents.Media.General;
 using MediaPortal.Utilities.Exceptions;
+using Okra.Data;
 
 namespace MediaPortal.UiComponents.Media.Models.ScreenData
 {
@@ -44,7 +46,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     protected AbstractProperty _numItemsStrProperty = null;
     protected AbstractProperty _isItemsValidProperty = null;
     protected AbstractProperty _isItemsEmptyProperty = null;
-    protected AbstractProperty _tooManyItemsProperty = null;
     protected AbstractProperty _showListProperty = null;
     protected AbstractProperty _showListHintProperty = null;
     protected AbstractProperty _listHintProperty = null;
@@ -74,15 +75,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     public string Screen
     {
       get { return _screen; }
-    }
-
-    /// <summary>
-    /// Returns a hint text that more than our maximum number of shown items should be preented.
-    /// Can be overridden in sub classes to modify the text to be shown.
-    /// </summary>
-    public virtual string MoreThanMaxItemsHint
-    {
-      get { return LocalizationHelper.Translate(Consts.RES_MORE_THAN_MAX_ITEMS_HINT, Consts.MAX_NUM_ITEMS_VISIBLE); }
     }
 
     /// <summary>
@@ -193,20 +185,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       protected set { _isItemsEmptyProperty.SetValue(value); }
     }
 
-    public AbstractProperty TooManyItemsProperty
-    {
-      get { return _tooManyItemsProperty; }
-    }
-
-    /// <summary>
-    /// Gets the information whether there are too many items in the current view.
-    /// </summary>
-    public bool TooManyItems
-    {
-      get { return (bool) _tooManyItemsProperty.GetValue(); }
-      protected set { _tooManyItemsProperty.SetValue(value); }
-    }
-
     #endregion
 
     public bool IsEnabled
@@ -250,7 +228,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       _numItemsStrProperty = new WProperty(typeof(string), string.Empty);
       _isItemsValidProperty = new WProperty(typeof(bool), true);
       _isItemsEmptyProperty = new WProperty(typeof(bool), true);
-      _tooManyItemsProperty = new WProperty(typeof(bool), false);
       _showListProperty = new WProperty(typeof(bool), true);
       _showListHintProperty = new WProperty(typeof(bool), false);
       _listHintProperty = new WProperty(typeof(string), string.Empty);
@@ -267,7 +244,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       _numItemsStrProperty = null;
       _isItemsValidProperty = null;
       _isItemsEmptyProperty = null;
-      _tooManyItemsProperty = null;
       _showListProperty = null;
       _showListHintProperty = null;
       _listHintProperty = null;
@@ -279,17 +255,21 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     /// <summary>
     /// Returns all media items of the current screen and all sub-screens recursively.
     /// </summary>
-    /// <returns>Enumeration of media items.</returns>
-    public IEnumerable<MediaItem> GetAllMediaItems()
+    /// <returns>IList of media items.</returns>
+    public IList<MediaItem> GetAllMediaItems()
     {
-      List<MediaItem> result = new List<MediaItem>(GetAllMediaItemsOverride());
-      Sorting.Sorting sorting = CurrentSorting;
-      if (sorting != null)
-        result.Sort(sorting);
-      return result;
+      if (CurrentSorting == null)
+        return new VirtualizingDataList<MediaItem>(
+          new GenericPagedDataListSource<MediaItem>(
+            GetAllMediaItemsOverride().AsQueryable()));
+      else
+        return new VirtualizingDataList<MediaItem>(
+          new GenericPagedDataListSource<MediaItem>(
+            GetAllMediaItemsOverride().AsQueryable()
+            .OrderByDescending(mediaItem => mediaItem, CurrentSorting)));
     }
 
-    protected virtual IEnumerable<MediaItem> GetAllMediaItemsOverride()
+    protected virtual IList<MediaItem> GetAllMediaItemsOverride()
     {
       // Actually, this method doesn't need to be virtual because the code here is very generic -
       // depending on the base view specification of the current screen, we collect all items.
@@ -301,7 +281,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     protected virtual void Display_ListBeingBuilt()
     {
       ShowList = false;
-      TooManyItems = false;
       IsItemsEmpty = false;
       ListHint = ListBeingBuiltHint;
       ShowListHint = true;
@@ -309,21 +288,9 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       NumItemsStr = "?";
     }
 
-    protected virtual void Display_TooManyItems(int numItems)
-    {
-      ShowList = false;
-      TooManyItems = true;
-      IsItemsEmpty = false;
-      ListHint = MoreThanMaxItemsHint;
-      ShowListHint = true;
-      IsItemsValid = true;
-      NumItemsStr = Utils.BuildNumItemsStr(numItems, null);
-    }
-
     protected virtual void Display_Normal(int numItems, int? total)
     {
       ShowList = true;
-      TooManyItems = false;
       if (numItems == 0)
       {
         IsItemsEmpty = true;
@@ -344,7 +311,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     {
       IsItemsValid = false;
       IsItemsEmpty = false;
-      TooManyItems = false;
       ShowList = false;
       ShowListHint = false;
       ListHint = string.Empty;

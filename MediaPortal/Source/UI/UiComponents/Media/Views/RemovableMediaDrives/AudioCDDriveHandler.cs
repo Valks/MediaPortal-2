@@ -159,7 +159,7 @@ namespace MediaPortal.UiComponents.Media.Views.RemovableMediaDrives
       get { return new List<ViewSpecification> {_audioCDSubViewSpecification}; }
     }
 
-    public override IEnumerable<MediaItem> GetAllMediaItems()
+    public override IList<MediaItem> GetAllMediaItems()
     {
       return _audioCDSubViewSpecification.GetAllMediaItems();
     }

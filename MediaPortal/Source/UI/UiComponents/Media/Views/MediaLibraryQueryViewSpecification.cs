@@ -32,6 +32,7 @@ using MediaPortal.Common.MediaManagement.DefaultItemAspects;
 using MediaPortal.Common.MediaManagement.MLQueries;
 using MediaPortal.Common.SystemCommunication;
 using MediaPortal.UI.ServerCommunication;
+using Okra.Data;
 using UPnP.Infrastructure.CP;
 
 namespace MediaPortal.UiComponents.Media.Views
@@ -109,12 +110,23 @@ namespace MediaPortal.UiComponents.Media.Views
         };
     }
 
-    public override IEnumerable<MediaItem> GetAllMediaItems()
+    public override IList<MediaItem> GetAllMediaItems()
     {
       IContentDirectory cd = ServiceRegistration.Get<IServerConnectionManager>().ContentDirectory;
       if (cd == null)
         return new List<MediaItem>();
-      return cd.Search(_query, _onlyOnline);
+      //return cd.Search(_query, _onlyOnline);
+      return new VirtualizingDataList<MediaItem>(new GenericPagedDataListSource<MediaItem>((pageNumber, pageSize) =>
+      {
+        _query.Limit = (uint)pageSize;
+        _query.Offset = (uint)(pageNumber * pageSize);
+        IList<MediaItem> queryResult = cd.Search(_query, _onlyOnline);
+
+        return new DataListPageResult<MediaItem>(queryResult.Count, pageSize, pageNumber, queryResult);
+      }, () =>
+      {
+        
+      }));
     }
 
     protected internal override void ReLoadItemsAndSubViewSpecifications(out IList<MediaItem> mediaItems, out IList<ViewSpecification> subViewSpecifications)
@@ -126,6 +138,7 @@ namespace MediaPortal.UiComponents.Media.Views
         return;
       try
       {
+        // TODO: Check if we need this anymore, with a virtualized data source it doesn't matter.
         if (MaxNumItems.HasValue)
         {
           // First request value groups. That is a performance consideration:

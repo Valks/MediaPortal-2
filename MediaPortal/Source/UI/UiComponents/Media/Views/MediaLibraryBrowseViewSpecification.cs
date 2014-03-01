@@ -115,7 +115,7 @@ namespace MediaPortal.UiComponents.Media.Views
       return new ServerConnectionChangeNotificator();
     }
 
-    public override IEnumerable<MediaItem> GetAllMediaItems()
+    public override IList<MediaItem> GetAllMediaItems()
     {
       IContentDirectory cd = ServiceRegistration.Get<IServerConnectionManager>().ContentDirectory;
       if (cd == null)

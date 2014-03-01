@@ -49,11 +49,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       _searchTimer = new Timer(OnSearchTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
     }
 
-    public override string MoreThanMaxItemsHint
-    {
-      get { return LocalizationHelper.Translate(Consts.RES_MORE_THAN_MAX_ITEMS_SEARCH_RESULT_HINT, Consts.MAX_NUM_ITEMS_VISIBLE); }
-    }
-
     public override string ListBeingBuiltHint
     {
       get { return Consts.RES_SEARCH_RESULT_BEING_BUILT_HINT; }
@@ -90,7 +85,7 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       DoSearch();
     }
 
-    protected override IEnumerable<MediaItem> GetAllMediaItemsOverride()
+    protected override IList<MediaItem> GetAllMediaItemsOverride()
     {
       return BuildAllItemsView().MediaItems;
     }
@@ -138,7 +133,6 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       // Initialize data manually which would have been initialized by AbstractItemsScreenData.UpdateMediaItems else
       IsItemsValid = true;
       IsItemsEmpty = false;
-      TooManyItems = false;
       NumItemsStr = "-";
       lock (_syncObj)
         _view = null;

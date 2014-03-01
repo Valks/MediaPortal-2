@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaPortal.Common;
 using MediaPortal.Common.Commands;
@@ -35,6 +36,7 @@ using MediaPortal.UiComponents.Media.Views;
 using MediaPortal.UiComponents.Media.General;
 using MediaPortal.UiComponents.Media.Models.Navigation;
 using MediaPortal.Utilities;
+using Okra.Data;
 
 namespace MediaPortal.UiComponents.Media.Models.ScreenData
 {
@@ -56,7 +58,7 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     /// Creates a new instance of <see cref="AbstractItemsScreenData"/>.
     /// </summary>
     /// <param name="screen">The screen associated with this screen data.</param>
-    /// <param name="menuItemLabel">Laben which will be shown in the menu to switch to this screen data.</param>
+    /// <param name="menuItemLabel">Label which will be shown in the menu to switch to this screen data.</param>
     /// <param name="navbarSubViewNavigationDisplayLabel">Display label to be shown in the navbar when we
     /// navigate to a sub view.</param>
     /// <param name="playableItemCreator">Delegate which will be called for a media item when the user chooses it.</param>
@@ -120,19 +122,19 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       lock (_syncObj)
         if (_view != null)
           _view.Invalidate();
-      UpdateMediaItems(false);
+      UpdateMediaItems();
     }
 
     public override void UpdateItems()
     {
-      UpdateMediaItems(false);
+      UpdateMediaItems();
     }
 
     public void ReloadMediaItems(View view, bool createNewList)
     {
       lock (_syncObj)
         _view = view;
-      UpdateMediaItems(createNewList);
+      UpdateMediaItems();
     }
 
     private void ViewChanged()
@@ -163,88 +165,109 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     /// <summary>
     /// Updates the GUI data for a media items view screen which reflects the data of the <see cref="CurrentView"/>.
     /// </summary>
-    /// <param name="createNewList">If set to <c>true</c>, this method will re-create the
-    /// <see cref="AbstractScreenData.Items"/> list, else it will reuse it.</param>
-    protected void UpdateMediaItems(bool createNewList)
+    protected void UpdateMediaItems()
     {
       View view;
       // Control other threads reentering this method
       lock (_syncObj)
       {
-        if (_buildingList)
-        { // Another thread is already building the items list - mark it as dirty and let the other thread
-          // rebuild it.
+        if (_buildingList) // Another thread is already building the items list - mark it as dirty and let the other thread rebuild it.
+        {
           _listDirty = true;
           return;
         }
+
         // Mark the list as being built
         view = _view;
         InstallViewChangeNotificator(_view.CreateViewChangeNotificator());
         _buildingList = true;
         _listDirty = false;
       }
+
       try
       {
         Display_ListBeingBuilt();
-        ItemsList items;
-        if (createNewList)
-          items = new ItemsList();
-        else
-        {
-          items = _items;
-          items.Clear();
-        }
+        ItemsList items = null;
+
         try
         {
-          // TODO: Add the items in a separate job while the UI already shows the new screen
           if (view.IsValid)
           {
             // Add items for sub views
             IList<View> subViews = view.SubViews;
             IList<MediaItem> mediaItems = view.MediaItems;
             lock (_syncObj)
+            {
               if (_listDirty)
                 goto RebuildView;
-            if (subViews == null || mediaItems == null)
-              Display_ItemsInvalid();
-            else
-            {
-              if (subViews.Count + mediaItems.Count > Consts.MAX_NUM_ITEMS_VISIBLE)
-                Display_TooManyItems(subViews.Count + mediaItems.Count);
+              if (subViews == null || mediaItems == null)
+                Display_ItemsInvalid();
               else
               {
-                int totalNumItems = 0;
+                Func<int, int, DataListPageResult<ListItem>> viewsList = (pageNumber, pageSize) =>
+                  {
+                    List<ListItem> navItems = new List<ListItem>();
 
-                List<NavigationItem> viewsList = new List<NavigationItem>();
-                foreach (View sv in subViews)
-                {
-                  ViewItem item = new ViewItem(sv, null, sv.AbsNumItems);
-                  View subView = sv;
-                  item.Command = new MethodDelegateCommand(() => NavigateToView(subView.Specification));
-                  viewsList.Add(item);
-                  if (sv.AbsNumItems.HasValue)
-                    totalNumItems += sv.AbsNumItems.Value;
-                }
-                // Morpheus_xx, 2014-01-27: Commented the sorting call, as it overrides the sorting of the SubViews list. This is required for cases
-                // where sorting is not done by name, but i.e. by "max date" of group of items (stacking view, sorted by max date).
-                // viewsList.Sort((v1, v2) => string.Compare(v1.SortString, v2.SortString));
-                CollectionUtils.AddAll(items, viewsList);
+                    // Determine where to start
+                    int startPosition = pageNumber * pageSize;
+                    int endPosition = startPosition + pageSize;
+
+                    if (subViews.Count < startPosition)
+                      return new DataListPageResult<ListItem>(0, pageSize, pageNumber, null);
+
+                    for (int i = startPosition; i < (subViews.Count < endPosition ? subViews.Count : endPosition); i++)
+                    {
+                      ViewItem item = new ViewItem(subViews[i], null, subViews[i].AbsNumItems);
+                      View sv = subViews[i];
+                      item.Command = new MethodDelegateCommand(() => NavigateToView(sv.Specification));
+
+                      navItems.Add(item);
+                    }
+
+                    return new DataListPageResult<ListItem>(navItems.Count, pageSize, pageNumber, navItems);
+                  };
+                Func<int?> viewsListCount = () => subViews.Sum(subView => subView.AbsNumItems ?? 0);
 
                 lock (_syncObj)
                   if (_listDirty)
                     goto RebuildView;
 
-                PlayableItemCreatorDelegate picd = PlayableItemCreator;
-                List<PlayableMediaItem> itemsList = mediaItems.Select(childItem => picd(childItem)).Where(item => item != null).ToList();
                 Sorting.Sorting sorting = CurrentSorting;
-                if (sorting != null)
-                  itemsList.Sort((i1, i2) => sorting.Compare(i1.MediaItem, i2.MediaItem));
-                else
-                  // Default sorting: Use SortString
-                  itemsList.Sort((i1, i2) => string.Compare(i1.SortString, i2.SortString));
-                CollectionUtils.AddAll(items, itemsList);
+                PlayableItemCreatorDelegate picd = PlayableItemCreator;
+                IQueryable<PlayableMediaItem> itemsQuery = mediaItems.Select(childItem => picd(childItem)).Where(item => item != null).AsQueryable();
+                Func<int, int, DataListPageResult<ListItem>> itemsList;
+                Func<int?> itemsListCount = () => itemsQuery.Count();
 
-                Display_Normal(items.Count, totalNumItems == 0 ? new int?() : totalNumItems);
+                if (sorting == null)
+                {
+                  itemsList = (pageNumber, pageSize) =>
+                  {
+                    var result = itemsQuery.Skip(pageNumber * pageSize).OrderByDescending(item => item.SortString, StringComparer.Create(CultureInfo.InvariantCulture, false)).Take(pageSize).ToList<ListItem>();
+                    return new DataListPageResult<ListItem>(result.Count, pageSize, pageNumber, result);
+                  };
+                }
+                else
+                {
+                  itemsList = (pageNumber, pageSize) =>
+                  {
+                    List<ListItem> result = itemsQuery.Skip(pageNumber * pageSize).OrderByDescending(item => item.MediaItem, sorting).Take(pageSize).ToList<ListItem>();
+                    return new DataListPageResult<ListItem>(result.Count, pageSize, pageNumber, result);
+                  };
+                }
+
+                items = new ItemsList(new GenericPagedDataListSource<ListItem>(
+                  new Func<int, int, DataListPageResult<ListItem>>[]
+                  {
+                    viewsList,
+                    itemsList
+                  },
+                  new Func<int?>[]
+                  {
+                    viewsListCount,
+                    itemsListCount
+                  }));
+
+                Display_Normal(items.Count, items.Count == 0 ? new int?() : items.Count);
               }
             }
           }
@@ -267,11 +290,12 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
           else
             dirty = false;
         if (dirty)
-          UpdateMediaItems(createNewList);
+          UpdateMediaItems();
         else
         {
           _items = items;
-          _items.FireChange();
+          if (_items != null) 
+            _items.FireChange();
         }
       }
       finally
@@ -280,6 +304,125 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
           _buildingList = false;
       }
     }
+
+    /// <summary>
+    /// Updates the GUI data for a media items view screen which reflects the data of the <see cref="CurrentView"/>.
+    /// </summary>
+    /// <param name="createNewList">If set to <c>true</c>, this method will re-create the
+    /// <see cref="AbstractScreenData.Items"/> list, else it will reuse it.</param>
+    //protected void UpdateMediaItems(bool createNewList)
+    //{
+    //  View view;
+    //  // Control other threads reentering this method
+    //  lock (_syncObj)
+    //  {
+    //    if (_buildingList)
+    //    { // Another thread is already building the items list - mark it as dirty and let the other thread
+    //      // rebuild it.
+    //      _listDirty = true;
+    //      return;
+    //    }
+    //    // Mark the list as being built
+    //    view = _view;
+    //    InstallViewChangeNotificator(_view.CreateViewChangeNotificator());
+    //    _buildingList = true;
+    //    _listDirty = false;
+    //  }
+    //  try
+    //  {
+    //    Display_ListBeingBuilt();
+    //    ItemsList items;
+    //    if (createNewList)
+    //      items = new ItemsList();
+    //    else
+    //    {
+    //      items = _items;
+    //      items.Clear();
+    //    }
+    //    try
+    //    {
+    //      // TODO: Add the items in a separate job while the UI already shows the new screen
+    //      if (view.IsValid)
+    //      {
+    //        // Add items for sub views
+    //        IList<View> subViews = view.SubViews;
+    //        IList<MediaItem> mediaItems = view.MediaItems;
+    //        lock (_syncObj)
+    //          if (_listDirty)
+    //            goto RebuildView;
+    //        if (subViews == null || mediaItems == null)
+    //          Display_ItemsInvalid();
+    //        else
+    //        {
+    //          int totalNumItems = 0;
+
+    //            IList<NavigationItem> viewsList = new List<NavigationItem>();
+    //            foreach (View sv in subViews)
+    //            {
+    //              ViewItem item = new ViewItem(sv, null, sv.AbsNumItems);
+    //              View subView = sv;
+    //              item.Command = new MethodDelegateCommand(() => NavigateToView(subView.Specification));
+    //              viewsList.Add(item);
+    //              if (sv.AbsNumItems.HasValue)
+    //                totalNumItems += sv.AbsNumItems.Value;
+    //            }
+    //            // Morpheus_xx, 2014-01-27: Commented the sorting call, as it overrides the sorting of the SubViews list. This is required for cases
+    //            // where sorting is not done by name, but i.e. by "max date" of group of items (stacking view, sorted by max date).
+    //            // viewsList.Sort((v1, v2) => string.Compare(v1.SortString, v2.SortString));
+    //            CollectionUtils.AddAll(items, viewsList);
+
+    //            lock (_syncObj)
+    //              if (_listDirty)
+    //                goto RebuildView;
+
+    //            PlayableItemCreatorDelegate picd = PlayableItemCreator;
+    //            IList<PlayableMediaItem> itemsList = mediaItems.Select(childItem => picd(childItem)).Where(item => item != null).ToList();
+    //            Sorting.Sorting sorting = CurrentSorting;
+    //            if (sorting != null)
+    //              itemsList.Sort((i1, i2) => sorting.Compare(i1.MediaItem, i2.MediaItem));
+    //            else
+    //              // Default sorting: Use SortString
+    //              itemsList.Sort((i1, i2) => string.Compare(i1.SortString, i2.SortString));
+    //            CollectionUtils.AddAll(items, itemsList);
+
+              
+
+    //            Display_Normal(items.Count, totalNumItems == 0 ? new int?() : totalNumItems);
+    //          }
+    //        }
+    //      }
+    //      else
+    //        Display_ItemsInvalid();
+    //    }
+    //    catch (Exception e)
+    //    {
+    //      ServiceRegistration.Get<ILogger>().Warn("AbstractItemsScreenData: Error creating items list", e);
+    //      Display_ItemsInvalid();
+    //    }
+    //    RebuildView:
+    //    bool dirty;
+    //    lock (_syncObj)
+    //      if (_listDirty)
+    //      {
+    //        dirty = true;
+    //        _buildingList = false;
+    //      }
+    //      else
+    //        dirty = false;
+    //    if (dirty)
+    //      UpdateMediaItems(createNewList);
+    //    else
+    //    {
+    //      _items = items;
+    //      _items.FireChange();
+    //    }
+    //  }
+    //  finally
+    //  {
+    //    lock (_syncObj)
+    //      _buildingList = false;
+    //  }
+    //}
 
     /// <summary>
     /// Does the actual work of navigating to the specifield sub view. This will create a new <see cref="NavigationData"/>

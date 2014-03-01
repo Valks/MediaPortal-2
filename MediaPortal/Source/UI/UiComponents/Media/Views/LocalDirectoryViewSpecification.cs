@@ -29,6 +29,7 @@ using MediaPortal.Common;
 using MediaPortal.Common.Logging;
 using MediaPortal.Common.MediaManagement;
 using MediaPortal.Common.ResourceAccess;
+using Okra.Data;
 
 namespace MediaPortal.UiComponents.Media.Views
 {
@@ -112,18 +113,51 @@ namespace MediaPortal.UiComponents.Media.Views
       get { return _viewPath.IsValidLocalPath; }
     }
 
-    public override IEnumerable<MediaItem> GetAllMediaItems()
+    public override IList<MediaItem> GetAllMediaItems()
     {
       return GetItemsRecursive(BuildView());
     }
 
-    protected IEnumerable<MediaItem> GetItemsRecursive(View view)
+    protected IList<MediaItem> GetItemsRecursive(View view)
     {
-      foreach (MediaItem item in view.MediaItems)
-        yield return item;
-      foreach (View subView in view.SubViews)
-        foreach (MediaItem item in GetItemsRecursive(subView))
-          yield return item;
+      GenericPagedDataListSource<MediaItem> dataSource = new GenericPagedDataListSource<MediaItem>(
+        (pageNumber, pageSize) =>
+        {
+          List<MediaItem> items = new List<MediaItem>();
+
+          items.AddRange(GetItemsRecursive(0, pageNumber * pageSize, pageNumber * pageSize + pageSize, view));
+
+          return new DataListPageResult<MediaItem>(items.Count, pageSize, pageNumber, items);
+        });
+
+      return new VirtualizingDataList<MediaItem>(dataSource);
+    }
+
+    protected IList<MediaItem> GetItemsRecursive(int position, int startPosition, int endPosition, View currentView)
+    {
+      List<MediaItem> items = new List<MediaItem>();
+
+      int activeObjectItemCount = currentView.MediaItems.Count;
+
+      if (items.Count + activeObjectItemCount >= startPosition)
+      {
+        for (int i = position; i < ((position + activeObjectItemCount) <= endPosition ? (position + activeObjectItemCount) : endPosition); i++)
+        {
+          items.Add(currentView.MediaItems[i]);
+        }
+      }
+
+      if (items.Count >= endPosition)
+        return items;
+
+      foreach (View subView in currentView.SubViews)
+      {
+        items.AddRange(GetItemsRecursive(items.Count, startPosition, endPosition, subView));
+        if (items.Count >= endPosition)
+          break;
+      }
+
+      return items;
     }
 
     protected internal override void ReLoadItemsAndSubViewSpecifications(out IList<MediaItem> mediaItems, out IList<ViewSpecification> subViewSpecifications)
