@@ -105,7 +105,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.MediaExtensions
 
       _customRootViewSpecification = new StackingViewSpecification(_viewName, null, _necessaryMias, optionalMias, true)
       {
-        MaxNumItems = Consts.MAX_NUM_ITEMS_VISIBLE
+        //MaxNumItems = Consts.MAX_NUM_ITEMS_VISIBLE
       };
     }
   }

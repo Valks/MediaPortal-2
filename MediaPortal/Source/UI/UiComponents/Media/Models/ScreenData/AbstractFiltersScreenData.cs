@@ -35,6 +35,7 @@ using MediaPortal.UiComponents.Media.Views;
 using MediaPortal.UiComponents.Media.FilterCriteria;
 using MediaPortal.UiComponents.Media.General;
 using MediaPortal.UiComponents.Media.Models.Navigation;
+using Okra.Data;
 
 namespace MediaPortal.UiComponents.Media.Models.ScreenData
 {
@@ -83,7 +84,7 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     public override void Reload()
     {
       lock (_syncObj)
-        ReloadFilterValuesList(false);
+        ReloadFilterValuesList();
     }
 
     public override void UpdateItems()
@@ -93,14 +94,14 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     public override void CreateScreenData(NavigationData navigationData)
     {
       base.CreateScreenData(navigationData);
-      ReloadFilterValuesList(true);
+      ReloadFilterValuesList();
     }
 
     /// <summary>
     /// Updates the GUI data for a filter values selection screen which reflects the available filter values for
     /// the current base view specification of our <see cref="AbstractScreenData._navigationData"/>.
     /// </summary>
-    protected void ReloadFilterValuesList(bool createNewList)
+    protected void ReloadFilterValuesList()
     {
       MediaLibraryQueryViewSpecification currentVS = _navigationData.BaseViewSpecification as MediaLibraryQueryViewSpecification;
       if (currentVS == null)
@@ -121,80 +122,56 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
         _buildingList = true;
         _listDirty = false;
       }
+
       try
       {
-        ItemsList items;
-        if (createNewList)
-          items = new ItemsList();
-        else
-        {
-          items = _items;
-          items.Clear();
-        }
+        Display_ListBeingBuilt();
+        ItemsList items = null;
 
         try
         {
-          Display_ListBeingBuilt();
-          bool grouping = true;
+          // TODO: Understand what we're trying to achieve with fv here.
           ICollection<FilterValue> fv = _clusterFilter == null ?
-              _filterCriterion.GroupValues(currentVS.NecessaryMIATypeIds, _clusterFilter, currentVS.Filter) : null;
-          
-          if (fv == null || fv.Count <= Consts.MAX_NUM_ITEMS_VISIBLE)
-          {
-            fv = _filterCriterion.GetAvailableValues(currentVS.NecessaryMIATypeIds, _clusterFilter, currentVS.Filter);
-            grouping = false;
-          }
-          if (fv.Count > Consts.MAX_NUM_ITEMS_VISIBLE)
-            Display_TooManyItems(fv.Count);
-          else
-          {
-            lock (_syncObj)
-              if (_listDirty)
-                goto RebuildView;
-            int totalNumItems = 0;
+            _filterCriterion.GroupValues(currentVS.NecessaryMIATypeIds, _clusterFilter, currentVS.Filter) : null;
 
-            // Build collection of available (filter/display) screens which will remain in the next view - that is all currently
-            // available screens without the screen which equals this current screen. But we cannot simply remove "this"
-            // from the collection, because "this" could be a derived screen (in case our base screen showed groups).
-            // So we need an equality criterion when the screen to be removed is equal to this screen in terms of its
-            // filter criterion. But with the given data, we actually cannot derive that equality.
-            // So we simply use the MenuItemLabel, which should be the same in this and the base screen of the same filter.
-            foreach (FilterValue filterValue in fv)
-            {
-              string filterTitle = filterValue.Title;
-              IFilter selectAttributeFilter = filterValue.SelectAttributeFilter;
-              MediaLibraryQueryViewSpecification subVS = currentVS.CreateSubViewSpecification(filterTitle, filterValue.Filter);
-              T filterValueItem = new T
-              {
-                SimpleTitle = filterTitle,
-                NumItems = filterValue.NumItems,
-                Command = grouping ? 
-                  new MethodDelegateCommand(() => NavigateToGroup(subVS, selectAttributeFilter)) :
-                  new MethodDelegateCommand(() => NavigateToSubView(subVS))
-              };
-              items.Add(filterValueItem);
-              if (filterValue.NumItems.HasValue)
-                totalNumItems += filterValue.NumItems.Value;
-            }
-            Display_Normal(items.Count, totalNumItems == 0 ? new int?() : totalNumItems);
-          }
+          fv = _filterCriterion.GetAvailableValues(currentVS.NecessaryMIATypeIds, _clusterFilter, currentVS.Filter);
+
+          lock (_syncObj)
+            if (_listDirty)
+              goto RebuildView;
+
+          // Build collection of available (filter/display) screens which will remain in the next view - that is all currently
+          // available screens without the screen which equals this current screen. But we cannot simply remove "this"
+          // from the collection, because "this" could be a derived screen (in case our base screen showed groups).
+          // So we need an equality criterion when the screen to be removed is equal to this screen in terms of its
+          // filter criterion. But with the given data, we actually cannot derive that equality.
+          // So we simply use the MenuItemLabel, which should be the same in this and the base screen of the same filter.
+          items = new ItemsList(new GenericPagedDataListSource<ListItem>(fv.Select(value => new T()
+          {
+            SimpleTitle = value.Title,
+            NumItems = value.NumItems,
+            Command = new MethodDelegateCommand(() => NavigateToSubView(currentVS.CreateSubViewSpecification(value.Title, value.Filter)))
+          }).AsQueryable()));
+          
+          Display_Normal(items.Count, items.Count == 0 ? new int?() : items.Count);
         }
         catch (Exception e)
         {
           ServiceRegistration.Get<ILogger>().Warn("AbstractFiltersScreenData: Error creating filter values list", e);
           Display_ItemsInvalid();
         }
-      RebuildView:
+        RebuildView:
         if (_listDirty)
         {
           lock (_syncObj)
             _buildingList = false;
-          ReloadFilterValuesList(createNewList);
+          ReloadFilterValuesList();
         }
         else
         {
           _items = items;
-          _items.FireChange();
+          // Should never be null.
+          if (_items != null) _items.FireChange();
         }
       }
       finally

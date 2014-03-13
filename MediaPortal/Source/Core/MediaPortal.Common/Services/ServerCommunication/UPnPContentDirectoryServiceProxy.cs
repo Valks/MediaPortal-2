@@ -364,6 +364,15 @@ namespace MediaPortal.Common.Services.ServerCommunication
       return (int) outParameters[0];
     }
 
+    public int CountSearchMediaItems(MediaItemQuery query, bool onlyOnline)
+    {
+      CpAction action = GetAction("X_MediaPortal_CountSearchMediaItems");
+      String onlineStateStr = SerializeOnlineState(onlyOnline);
+      IList<object> inParameters = new List<object> { query, onlineStateStr };
+      IList<object> outParameters = action.InvokeAction(inParameters);
+      return (int)outParameters[0];
+    }
+
     #endregion
 
     #region Playlist management

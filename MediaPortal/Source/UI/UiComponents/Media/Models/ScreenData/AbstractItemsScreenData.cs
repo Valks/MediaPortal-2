@@ -215,7 +215,7 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
                     if (subViews.Count < startPosition)
                       return new DataListPageResult<ListItem>(0, pageSize, pageNumber, null);
 
-                    for (int i = startPosition; i < (subViews.Count < endPosition ? subViews.Count : endPosition); i++)
+                    for (int i = startPosition; i < Math.Min(subViews.Count, endPosition); i++)
                     {
                       ViewItem item = new ViewItem(subViews[i], null, subViews[i].AbsNumItems);
                       View sv = subViews[i];

@@ -69,7 +69,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.MediaExtensions
       }
     }
 
-    public override IEnumerable<MediaItem> GetAllMediaItems()
+    public override IList<MediaItem> GetAllMediaItems()
     {
       return _mediaItems;
     }

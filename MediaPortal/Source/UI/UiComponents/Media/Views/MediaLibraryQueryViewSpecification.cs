@@ -123,10 +123,7 @@ namespace MediaPortal.UiComponents.Media.Views
         IList<MediaItem> queryResult = cd.Search(_query, _onlyOnline);
 
         return new DataListPageResult<MediaItem>(queryResult.Count, pageSize, pageNumber, queryResult);
-      }, () =>
-      {
-        
-      }));
+      }, () => cd.CountSearchMediaItems(_query, _onlyOnline)));
     }
 
     protected internal override void ReLoadItemsAndSubViewSpecifications(out IList<MediaItem> mediaItems, out IList<ViewSpecification> subViewSpecifications)

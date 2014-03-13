@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 using MediaPortal.Common.Localization;
 using MediaPortal.Utilities;
+using Okra.Data;
 
 namespace MediaPortal.UI.Presentation.DataObjects
 {

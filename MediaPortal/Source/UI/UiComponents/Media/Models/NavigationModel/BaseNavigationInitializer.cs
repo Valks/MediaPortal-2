@@ -114,10 +114,7 @@ namespace MediaPortal.UiComponents.Media.Models.NavigationModel
       IEnumerable<Guid> skinDependentOptionalMIATypeIDs = MediaNavigationModel.GetMediaSkinOptionalMIATypes(MediaNavigationMode);
       // Prefer custom view specification.
       ViewSpecification rootViewSpecification = _customRootViewSpecification ??
-        new MediaLibraryQueryViewSpecification(_viewName, null, _necessaryMias, skinDependentOptionalMIATypeIDs, true)
-        {
-          MaxNumItems = Consts.MAX_NUM_ITEMS_VISIBLE
-        };
+        new MediaLibraryQueryViewSpecification(_viewName, null, _necessaryMias, skinDependentOptionalMIATypeIDs, true);
 
       if (nextScreen == null)
         nextScreen = _defaultScreen;

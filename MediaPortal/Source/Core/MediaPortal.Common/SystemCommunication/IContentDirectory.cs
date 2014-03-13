@@ -233,6 +233,17 @@ namespace MediaPortal.Common.SystemCommunication
     /// <returns>Number of matching media items.</returns>
     int CountMediaItems(IEnumerable<Guid> necessaryMIATypes, IFilter filter, bool onlyOnline);
 
+    /// <summary>
+    /// Counts the media items related to the query.
+    /// </summary>
+    /// <param name="query">Query object which specifies the search parameters.</param>
+    /// <param name="onlyOnline">If this parameter is set to <c>true</c>, only media items which are hosted by systems which
+    /// are currently online are returned.</param>
+    /// <returns>Count of matching media items with the media item aspects of the given
+    /// <see cref="MediaItemQuery.NecessaryRequestedMIATypeIDs"/> and <see cref="MediaItemQuery.OptionalRequestedMIATypeIDs"/>,
+    /// in the given sorting given by <see cref="MediaItemQuery.SortInformation"/>.</returns>
+    int CountSearchMediaItems(MediaItemQuery query, bool onlyOnline);
+
     #endregion
 
     #region Playlist management
