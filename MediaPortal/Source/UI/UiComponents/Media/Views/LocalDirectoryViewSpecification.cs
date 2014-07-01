@@ -120,17 +120,14 @@ namespace MediaPortal.UiComponents.Media.Views
 
     protected IList<MediaItem> GetItemsRecursive(View view)
     {
-      GenericPagedDataListSource<MediaItem> dataSource = new GenericPagedDataListSource<MediaItem>(
-        (pageNumber, pageSize) =>
-        {
-          List<MediaItem> items = new List<MediaItem>();
+      return new IncrementalLoadingDataList<MediaItem>(new SimplePagedDataListSource<MediaItem>((pageNumber, pageSize) =>
+      {
+        var result = new List<MediaItem>();
+        int startPos = pageNumber * pageSize;
+        result.AddRange(GetItemsRecursive(0, startPos, startPos + pageSize, view));
 
-          items.AddRange(GetItemsRecursive(0, pageNumber * pageSize, pageNumber * pageSize + pageSize, view));
-
-          return new DataListPageResult<MediaItem>(items.Count, pageSize, pageNumber, items);
-        });
-
-      return new VirtualizingDataList<MediaItem>(dataSource);
+        return new DataListPageResult<MediaItem>(result.Count, pageSize, pageNumber, result);
+      }));
     }
 
     protected IList<MediaItem> GetItemsRecursive(int position, int startPosition, int endPosition, View currentView)

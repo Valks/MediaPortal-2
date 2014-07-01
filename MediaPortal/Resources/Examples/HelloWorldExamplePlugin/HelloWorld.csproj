@@ -39,6 +39,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MediaPortal.Data">
+      <HintPath>..\..\..\..\..\..\..\Documents\Visual Studio 2013\Projects\MediaPortal\MediaPortal.Data\bin\Debug\MediaPortal.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -48,6 +51,8 @@
     <Compile Include="..\..\..\Source\Core\MediaPortal.Common\VersionInfo\VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="Data\HelloData.cs" />
+    <Compile Include="Data\HelloDataProvider.cs" />
     <Compile Include="Models\HelloWorldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

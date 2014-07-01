@@ -113,17 +113,19 @@ namespace MediaPortal.UiComponents.Media.Views
     public override IList<MediaItem> GetAllMediaItems()
     {
       IContentDirectory cd = ServiceRegistration.Get<IServerConnectionManager>().ContentDirectory;
-      if (cd == null)
-        return new List<MediaItem>();
-      //return cd.Search(_query, _onlyOnline);
-      return new VirtualizingDataList<MediaItem>(new GenericPagedDataListSource<MediaItem>((pageNumber, pageSize) =>
+      if (cd == null) return new List<MediaItem>();
+
+      return new IncrementalLoadingDataList<MediaItem>(new SimplePagedDataListSource<MediaItem>((pageNumber, pageSize) =>
       {
         _query.Limit = (uint)pageSize;
         _query.Offset = (uint)(pageNumber * pageSize);
-        IList<MediaItem> queryResult = cd.Search(_query, _onlyOnline);
+        IList<MediaItem> queryResult = cd.Search(_query,
+          _onlyOnline);
 
-        return new DataListPageResult<MediaItem>(queryResult.Count, pageSize, pageNumber, queryResult);
-      }, () => cd.CountSearchMediaItems(_query, _onlyOnline)));
+        return new DataListPageResult<MediaItem>(queryResult.Count,
+          pageSize, pageNumber, queryResult);
+      },
+        () => cd.CountSearchMediaItems(_query, _onlyOnline)));
     }
 
     protected internal override void ReLoadItemsAndSubViewSpecifications(out IList<MediaItem> mediaItems, out IList<ViewSpecification> subViewSpecifications)
@@ -161,7 +163,17 @@ namespace MediaPortal.UiComponents.Media.Views
           // Else: No grouping
         }
         // Else: No grouping
-        mediaItems = cd.Search(_query, _onlyOnline);
+        mediaItems = new IncrementalLoadingDataList<MediaItem>(new SimplePagedDataListSource<MediaItem>((pageNumber, pageSize) =>
+        {
+          _query.Limit = (uint)pageSize;
+          _query.Offset = (uint)(pageNumber * pageSize);
+          IList<MediaItem> queryResult = cd.Search(_query,
+            _onlyOnline);
+
+          return new DataListPageResult<MediaItem>(queryResult.Count,
+            pageSize, pageNumber, queryResult);
+        },
+          () => cd.CountSearchMediaItems(_query, _onlyOnline)));
         subViewSpecifications = new List<ViewSpecification>(0);
       }
       catch (UPnPRemoteException e)

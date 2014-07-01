@@ -22,10 +22,14 @@
 
 #endregion
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using Windows.UI.Xaml.Data;
 using MediaPortal.Common.General;
+using MediaPortal.Data.Collections.Generic;
 using MediaPortal.UI.SkinEngine.Commands;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Styles;
 using MediaPortal.UI.SkinEngine.Controls.Panels;
@@ -85,7 +89,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     void Init()
     {
       _items = new ItemCollection();
-      _itemsSourceProperty = new SProperty(typeof(IEnumerable), null);
+      _itemsSourceProperty = new SProperty(typeof(IList), null);
       _itemTemplateProperty = new SProperty(typeof(DataTemplate), null);
       _itemContainerStyleProperty = new SProperty(typeof(Style), null);
       _itemsPanelProperty = new SProperty(typeof(ItemsPanelTemplate), null);
@@ -169,18 +173,18 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 
     #region Event handlers
 
-    protected void DetachFromItemsSource(IEnumerable itemsSource)
+    protected void DetachFromItemsSource(IList itemsSource)
     {
-      IObservable coll = itemsSource as IObservable;
+      INotifyCollectionChanged coll = itemsSource as INotifyCollectionChanged;
       if (coll != null)
-        coll.ObjectChanged -= OnItemsSourceCollectionChanged;
+        coll.CollectionChanged -= OnItemsSourceCollectionChanged;
     }
 
-    protected void AttachToItemsSource(IEnumerable itemsSource)
+    protected void AttachToItemsSource(IList itemsSource)
     {
-      IObservable coll = itemsSource as IObservable;
+      INotifyCollectionChanged coll = itemsSource as INotifyCollectionChanged;
       if (coll != null)
-        coll.ObjectChanged += OnItemsSourceCollectionChanged;
+        coll.CollectionChanged += OnItemsSourceCollectionChanged;
     }
 
     protected void DetachFromItems(ItemCollection items)
@@ -199,12 +203,12 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
 
     void OnItemsSourceChanged(AbstractProperty property, object oldValue)
     {
-      DetachFromItemsSource(oldValue as IEnumerable);
+      DetachFromItemsSource(oldValue as IList);
       AttachToItemsSource(ItemsSource);
       OnItemsSourceChanged();
     }
 
-    void OnItemsSourceCollectionChanged(IObservable itemsSource)
+    void OnItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
     {
       OnItemsSourceChanged();
     }
@@ -303,9 +307,9 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     /// <summary>
     /// Gets or sets an enumeration used to generate the content of the ItemsControl.
     /// </summary>
-    public IEnumerable ItemsSource
+    public IList ItemsSource
     {
-      get { return (IEnumerable) _itemsSourceProperty.GetValue(); }
+      get { return (IList) _itemsSourceProperty.GetValue(); }
       set { _itemsSourceProperty.SetValue(value); }
     }
 
@@ -491,10 +495,32 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       DataStringProvider dataStringProvider = DataStringProvider;
       if (dataStringProvider == null)
         return null;
+
       IList<string> result = new List<string>(objects.Count);
       foreach (object o in objects)
         result.Add(dataStringProvider.GenerateDataString(o));
       return result;
+    }
+
+    protected IList<string> BuildDataStrings(IList<object> objects)
+    {
+      DataStringProvider dataStringProvider = DataStringProvider;
+      if (dataStringProvider == null)
+        return null;
+
+      IList<string> result = new List<string>(objects.Count);
+      foreach (object o in objects)
+        result.Add(dataStringProvider.GenerateDataString(o));
+      return result;
+    }
+
+    protected IVirtualizingCollection BuildDataStrings(IVirtualizingCollection objects)
+    {
+      DataStringProvider dataStringProvider = DataStringProvider;
+      if (dataStringProvider == null)
+        return null;
+
+      return new VirtualizingCollection<string>(new DataStringsProvider(objects, dataStringProvider));
     }
 
     protected void PrepareItems(bool force)
@@ -543,7 +569,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       //if (ItemContainerStyle == null || ItemTemplate == null)
       //  return;
 
-      IEnumerable itemsSource = ItemsSource;
+      IList itemsSource = ItemsSource;
       if (itemsSource == null)
       { // In this case, we must set up the items control using the Items property
         ItemCollection items = _items;
@@ -570,15 +596,26 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       }
       else
       {
-        IList<object> l = new List<object>();
-        ISynchronizable sync = itemsSource as ISynchronizable;
-        if (sync != null)
-          lock (sync.SyncRoot)
-            CollectionUtils.AddAll(l, itemsSource);
-        else
-          CollectionUtils.AddAll(l, itemsSource);
+        IList l;
 
-        presenter.SetDataStrings(BuildDataStrings(l));
+        IVirtualizingCollection virtualizingCollection = itemsSource as IVirtualizingCollection;
+        if (virtualizingCollection != null)
+        {
+          l = itemsSource;
+          presenter.SetDataStrings(BuildDataStrings(virtualizingCollection));
+        }
+        else
+        {
+          l = new List<object>();
+          ISynchronizable sync = itemsSource as ISynchronizable;
+          if (sync != null)
+            lock (sync.SyncRoot)
+              CollectionUtils.AddAll(l as IList<object>, itemsSource);
+          else
+            CollectionUtils.AddAll(l as IList<object>, itemsSource);
+
+          presenter.SetDataStrings(BuildDataStrings((IList<object>)l));
+        }
 
         var vsp = _itemsHostPanel as IVirtualizingPanel;
         if (vsp != null)
@@ -596,7 +633,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
         else
         {
           ItemCollection preparedItems = new ItemCollection();
-          preparedItems.AddAll(l.Select(PrepareItemContainer));
+          preparedItems.AddAll(((IList<object>)l).Select(PrepareItemContainer));
 
           SetPreparedItems(true, null, true, preparedItems);
         }

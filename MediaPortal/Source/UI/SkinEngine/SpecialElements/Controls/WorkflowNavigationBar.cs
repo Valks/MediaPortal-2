@@ -90,7 +90,10 @@ namespace MediaPortal.UI.SkinEngine.SpecialElements.Controls
         Stack<NavigationContext> contextStack = ServiceRegistration.Get<IWorkflowManager>().NavigationContextStack;
         List<NavigationContext> contexts = new List<NavigationContext>(contextStack);
         contexts.Reverse();
-        navigationItems.Clear();
+        if(navigationItems.IsReadOnly)
+          navigationItems = new ItemsList();
+        else
+          navigationItems.Clear();
         bool first = true;
         foreach (NavigationContext ctx in contexts)
         {

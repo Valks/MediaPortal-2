@@ -248,7 +248,8 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
       _showListHintProperty = null;
       _listHintProperty = null;
       if (_items != null)
-        _items.Clear();
+        if (!_items.IsReadOnly)
+          _items.Clear();
       _items = null;
     }
 
@@ -259,12 +260,12 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
     public IList<MediaItem> GetAllMediaItems()
     {
       if (CurrentSorting == null)
-        return new VirtualizingDataList<MediaItem>(
-          new GenericPagedDataListSource<MediaItem>(
+        return new IncrementalLoadingDataList<MediaItem>(
+          new SimplePagedDataListSource<MediaItem>(
             GetAllMediaItemsOverride().AsQueryable()));
       else
-        return new VirtualizingDataList<MediaItem>(
-          new GenericPagedDataListSource<MediaItem>(
+        return new IncrementalLoadingDataList<MediaItem>(
+          new SimplePagedDataListSource<MediaItem>(
             GetAllMediaItemsOverride().AsQueryable()
             .OrderByDescending(mediaItem => mediaItem, CurrentSorting)));
     }

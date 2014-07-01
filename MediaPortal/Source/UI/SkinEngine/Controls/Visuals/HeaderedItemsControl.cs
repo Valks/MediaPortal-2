@@ -219,7 +219,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     protected virtual bool InitializeSubItemsSource()
     {
       SubItemsProvider sip = SubItemsProvider;
-      IEnumerable oldItemsSource = ItemsSource;
+      IList oldItemsSource = ItemsSource;
       if (!_contextChangedAttached)
       {
         ContextChanged += OnContextChanged;

@@ -11,17 +11,37 @@
 
     <!-- Contents -->
     <ControlTemplate x:Key="Contents_Template">
-      <DockPanel
-          Context="{Model Id=5726DA5A-70D5-458f-AF67-611293D97912}" LastChildFill="False">
-        <Label Content="[HelloWorld.SampleText]" Color="{ThemeResource TextColor}" FontSize="36" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
-        <StackPanel DockPanel.Dock="Center" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Button Content="[HelloWorld.ButtonText]" Style="{ThemeResource ButtonWideStyle}" Margin="10"
-              HorizontalAlignment="Right" VerticalAlignment="Center"
-              Command="{Command ChangeHelloWorldString}"/>
-          <Label Content="{Binding HelloString}" Color="{ThemeResource TextColor}" Margin="10"
-              HorizontalAlignment="Left" VerticalAlignment="Center"/>
-        </StackPanel>
-      </DockPanel>
+        <DockPanel Context="{Model Id=5726DA5A-70D5-458f-AF67-611293D97912}" LastChildFill="False">
+            <Label Content="[HelloWorld.SampleText]" Color="{ThemeResource TextColor}" FontSize="36" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+            <StackPanel DockPanel.Dock="Center" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                 <Button Content="[HelloWorld.ButtonText]" Style="{ThemeResource ButtonWideStyle}" Margin="10"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Command="{Command ChangeHelloWorldString}"/>
+                <Label Content="{Binding HelloString}" Color="{ThemeResource TextColor}" Margin="10"
+                    HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            </StackPanel>
+            <DockPanel.Resources>
+                <DataTemplate x:Key="ItemDataTemplate">
+                    <Label Content="{Binding Data.Id}" FontSize="{ThemeResource SmallFontSize}" Width="100" />
+                    <Label Content="{Binding Data.Name}" FontSize="{ThemeResource SmallFontSize}" Width="100" />
+                </DataTemplate>
+                <Style x:Key="ListViewStyle" BasedOn="{ThemeResource DefaultListViewStyle}">
+                    <Setter Property="ItemTemplate" Value="{ThemeResource ItemDataTemplate}"/>
+                    <Setter Property="ItemContainerStyle" Value="{ThemeResource DefaultMenuItemContainerStyle}"/>
+                    <Setter Property="ItemsPanel">
+                        <Setter.Value>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel x:Name="ListItemsHost" IsItemsHost="True"/>
+                            </ItemsPanelTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DockPanel.Resources>
+            <Grid>
+                    <ListView ItemsSource="{Binding HelloData}" HorizontalAlignment="Center" Width="400" Style="{ThemeResource ContentsMenuListViewStyle}">
+                </ListView>
+            </Grid>
+        </DockPanel>
     </ControlTemplate>
 
   </Include.Resources>

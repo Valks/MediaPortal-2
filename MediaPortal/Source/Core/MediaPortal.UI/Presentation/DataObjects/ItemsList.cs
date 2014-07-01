@@ -25,7 +25,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using MediaPortal.Common.General;
 using Okra.Data;
 
@@ -70,7 +69,7 @@ namespace MediaPortal.UI.Presentation.DataObjects
 
     public ItemsList(IDataListSource<ListItem> dataSource)
     {
-      _backingList = new VirtualizingDataList<ListItem>(dataSource);
+      _backingList = new IncrementalLoadingDataList<ListItem>(dataSource);
     }
 
     #endregion
@@ -123,7 +122,7 @@ namespace MediaPortal.UI.Presentation.DataObjects
 
     public bool IsReadOnly
     {
-      get { return false; }
+      get { return _backingList.IsReadOnly; }
     }
 
     #endregion

@@ -22,8 +22,11 @@
 
 #endregion
 
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using MediaPortal.Data.Collections.Generic;
 using MediaPortal.UI.Control.InputManager;
 using MediaPortal.UI.SkinEngine.Controls.Panels;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Templates;
@@ -45,7 +48,8 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     protected int _startsWithIndex = 0;
     protected Panel _itemsHostPanel = null;
     protected bool _doScroll = false;
-    protected IList<string> _dataStrings = null;
+    protected IList _dataStrings = null;
+    protected bool _isVirtualDataStringsSource = false;
 
     #endregion
 
@@ -189,6 +193,12 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       _dataStrings = dataStrings == null ? null : new List<string>(dataStrings.Select(s => s == null ? null : s.ToLowerInvariant()));
     }
 
+    public void SetDataStrings(IVirtualizingCollection dataStrings)
+    {
+      _dataStrings = dataStrings;
+      _isVirtualDataStringsSource = true;
+    }
+
     /// <summary>
     /// Moves the focus to the first child item whose content starts with the specified
     /// <paramref name="startsWith"/> character.
@@ -198,31 +208,66 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     /// <paramref name="startsWith"/>.</param>
     public bool FocusItemWhichStartsWith(char startsWith, int index)
     {
-      IList<string> dataStrings = _dataStrings;
-      if (dataStrings == null || _itemsHostPanel == null)
+      if (_dataStrings == null)
         return false;
-      string startsWithStr = char.ToLower(startsWith).ToString();
+
+      string startsWithStr = char.ToLower(startsWith).ToString(CultureInfo.InvariantCulture);
       FrameworkElement element = null;
       int elementIndex = -1;
-      for (int i = 0; i < dataStrings.Count; i++)
+
+      if (_isVirtualDataStringsSource)
       {
-        string dataString = dataStrings[i];
-        if (dataString == null)
+        var dataStrings = (IVirtualizingCollection<string>) _dataStrings;
+
+        if (dataStrings == null || _itemsHostPanel == null)
           return false;
-        if (dataString.StartsWith(startsWithStr))
+        for (int i = 0; i < dataStrings.Count; i++)
         {
-          if (index == 0)
+          string dataString = dataStrings[i].Data;
+          if (dataString == null)
+            return false;
+          if (dataString.StartsWith(startsWithStr))
           {
-            FrameworkElement ele = _itemsHostPanel.GetElement(i);
-            if (ele == null || !ele.IsVisible)
-              continue;
-            element = ele;
-            elementIndex = i;
-            break;
+            if (index == 0)
+            {
+              FrameworkElement ele = _itemsHostPanel.GetElement(i);
+              if (ele == null || !ele.IsVisible)
+                continue;
+              element = ele;
+              elementIndex = i;
+              break;
+            }
+            index--;
           }
-          index--;
         }
       }
+      else
+      {
+        IList<string> dataStrings = _dataStrings as IList<string>;
+
+        if (dataStrings == null || _itemsHostPanel == null)
+          return false;
+        for (int i = 0; i < dataStrings.Count; i++)
+        {
+          string dataString = dataStrings[i];
+          if (dataString == null)
+            return false;
+          if (dataString.StartsWith(startsWithStr))
+          {
+            if (index == 0)
+            {
+              FrameworkElement ele = _itemsHostPanel.GetElement(i);
+              if (ele == null || !ele.IsVisible)
+                continue;
+              element = ele;
+              elementIndex = i;
+              break;
+            }
+            index--;
+          }
+        }
+      }
+      
       if (element == null)
         return false;
       _itemsHostPanel.BringIntoView(elementIndex);

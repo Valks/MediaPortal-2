@@ -146,7 +146,7 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
           // So we need an equality criterion when the screen to be removed is equal to this screen in terms of its
           // filter criterion. But with the given data, we actually cannot derive that equality.
           // So we simply use the MenuItemLabel, which should be the same in this and the base screen of the same filter.
-          items = new ItemsList(new GenericPagedDataListSource<ListItem>(fv.Select(value => new T()
+          items = new ItemsList(new SimplePagedDataListSource<ListItem>(fv.Select(value => new T
           {
             SimpleTitle = value.Title,
             NumItems = value.NumItems,

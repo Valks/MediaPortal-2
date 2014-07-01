@@ -47,6 +47,12 @@
     <Reference Include="FreeImageNET, Version=3.15.1.0, Culture=neutral, processorArchitecture=x86">
       <HintPath>..\..\..\Packages\FreeImageNET.3.15.1\lib\net20\FreeImageNET.dll</HintPath>
     </Reference>
+    <Reference Include="MediaPortal.Data">
+      <HintPath>..\..\..\..\..\..\..\Documents\Visual Studio 2013\Projects\MediaPortal\MediaPortal.Data\bin\Debug\MediaPortal.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Okra.Data">
+      <HintPath>..\..\..\Packages\Okra.Data.1.0.1-CI00007\lib\net451\Okra.Data.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX">
       <HintPath>..\..\..\Packages\SharpDX.2.5.0\lib\net40\SharpDX.dll</HintPath>
     </Reference>
@@ -59,6 +65,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsExtensions">
+      <HintPath>..\..\..\Packages\Okra.Data.1.0.1-CI00007\lib\net451\WindowsExtensions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Core\MediaPortal.Common\VersionInfo\VersionInfo.cs">
@@ -129,6 +138,7 @@
     <Compile Include="Controls\Panels\DefinitionsCollectionBase.cs" />
     <Compile Include="Controls\Panels\IItemProvider.cs" />
     <Compile Include="Controls\Transforms\MatrixTransform.cs" />
+    <Compile Include="Controls\Visuals\DataStringsProvider.cs" />
     <Compile Include="Controls\Visuals\Effects\Effect.cs" />
     <Compile Include="Controls\Visuals\Effects\ImageEffect.cs" />
     <Compile Include="Controls\Visuals\Effects\SimpleShaderEffect.cs" />

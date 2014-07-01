@@ -30,9 +30,9 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals.Templates
   /// Class which holds a property path expression which can be evaluated on a source element to generate a
   /// list of sub items.
   /// </summary>
-  public class SubItemsProvider : ElementProvider<IEnumerable>
+  public class SubItemsProvider : ElementProvider<IList>
   {
-    public IEnumerable GetSubItems(object source)
+    public IList GetSubItems(object source)
     {
       return GetElement(source);
     }

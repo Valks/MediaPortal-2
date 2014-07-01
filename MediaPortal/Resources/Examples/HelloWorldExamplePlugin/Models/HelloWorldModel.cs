@@ -22,7 +22,11 @@
 
 #endregion
 
+using System.Collections;
+using System.Collections.Generic;
+using HelloWorld.Data;
 using MediaPortal.Common.General;
+using MediaPortal.Data.Collections.Generic;
 using MediaPortal.UI.Presentation.Models;
 
 namespace HelloWorld.Models
@@ -84,6 +88,8 @@ namespace HelloWorld.Models
     /// </summary>
     protected readonly AbstractProperty _helloStringProperty;
 
+    protected readonly AbstractProperty _helloDataProperty;
+
     #endregion
 
     #region Ctor & maintainance
@@ -96,6 +102,9 @@ namespace HelloWorld.Models
       // In models, properties will always be WProperty instances. When using SProperties for screen databinding,
       // the system might run into memory leaks.
       _helloStringProperty = new WProperty(typeof(string), HELLOWORLD_RESOURCE);
+
+      _helloDataProperty = new WProperty(typeof(VirtualizingCollection<HelloData>), new VirtualizingCollection<HelloData>(
+        new HelloDataProvider(10000), 100, 10000));
     }
 
     #endregion
@@ -110,6 +119,12 @@ namespace HelloWorld.Models
     {
       get { return (string) _helloStringProperty.GetValue(); }
       set { _helloStringProperty.SetValue(value); }
+    }
+
+    public VirtualizingCollection<HelloData> HelloData
+    {
+      get { return (VirtualizingCollection<HelloData>)_helloDataProperty.GetValue(); }
+      set { _helloDataProperty.SetValue(value); }
     }
 
     /// <summary>
@@ -130,6 +145,11 @@ namespace HelloWorld.Models
     public AbstractProperty HelloStringProperty
     {
       get { return _helloStringProperty; }
+    }
+
+    public AbstractProperty HelloDataProperty
+    {
+      get { return _helloDataProperty; }
     }
 
     /// <summary>

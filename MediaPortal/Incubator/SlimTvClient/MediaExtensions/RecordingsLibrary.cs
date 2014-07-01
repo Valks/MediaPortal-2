@@ -103,10 +103,7 @@ namespace MediaPortal.Plugins.SlimTv.Client.MediaExtensions
         ImageAspect.ASPECT_ID
       }.Union(MediaNavigationModel.GetMediaSkinOptionalMIATypes(MediaNavigationMode));
 
-      _customRootViewSpecification = new StackingViewSpecification(_viewName, null, _necessaryMias, optionalMias, true)
-      {
-        //MaxNumItems = Consts.MAX_NUM_ITEMS_VISIBLE
-      };
+      _customRootViewSpecification = new StackingViewSpecification(_viewName, null, _necessaryMias, optionalMias, true);
     }
   }
 }

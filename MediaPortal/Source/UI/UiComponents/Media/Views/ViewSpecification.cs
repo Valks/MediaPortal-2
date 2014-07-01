@@ -119,8 +119,8 @@ namespace MediaPortal.UiComponents.Media.Views
       IList<MediaItem> mis;
       IList<ViewSpecification> vss;
       ReLoadItemsAndSubViewSpecifications(out mis, out vss);
-      return new VirtualizingDataList<MediaItem>(
-        new GenericPagedDataListSource<MediaItem>(
+      return new IncrementalLoadingDataList<MediaItem>(
+        new SimplePagedDataListSource<MediaItem>(
           vss.AsQueryable().SelectMany(subViewSpecifications => subViewSpecifications.GetAllMediaItems())
           .Union(mis.AsQueryable())));
     }

@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using MediaPortal.UI.SkinEngine.Controls.Panels;
 using MediaPortal.UI.SkinEngine.Controls.Visuals.Styles;
@@ -43,7 +44,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     protected Style _itemContainerStyle = null;
 
     protected FrameworkElement _parent = null;
-    protected IList<object> _items = null;
+    protected IList _items = null;
     protected int _populatedStartIndex = -1;
     protected int _populatedEndIndex = -1;
     protected IList<FrameworkElement> _materializedItems = null; // Same size as _items, only parts are populated
@@ -83,12 +84,12 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
       }
     }
 
-    public void Initialize(FrameworkElement parent, IEnumerable<object> itemsSource, Style itemContainerStyle, DataTemplate itemTemplate)
+    public void Initialize(FrameworkElement parent, IList itemsSource, Style itemContainerStyle, DataTemplate itemTemplate)
     {
       _parent = parent;
       if (_materializedItems != null)
         DisposeItems();
-      _items = new List<object>(itemsSource);
+      _items = itemsSource;
       _materializedItems = new List<FrameworkElement>(_items.Count);
       for (int i = 0; i < _items.Count; i++)
         _materializedItems.Add(null);
@@ -102,7 +103,7 @@ namespace MediaPortal.UI.SkinEngine.Controls.Visuals
     /// <summary>
     /// Gets the underlaying items list.
     /// </summary>
-    public IList<object> Items
+    public IList Items
     {
       get { return _items; }
     }

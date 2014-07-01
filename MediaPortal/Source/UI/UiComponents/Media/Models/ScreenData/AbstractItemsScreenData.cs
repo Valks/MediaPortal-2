@@ -255,13 +255,13 @@ namespace MediaPortal.UiComponents.Media.Models.ScreenData
                   };
                 }
 
-                items = new ItemsList(new GenericPagedDataListSource<ListItem>(
-                  new Func<int, int, DataListPageResult<ListItem>>[]
+                items = new ItemsList(new SimplePagedDataListSource<ListItem>(
+                  new[]
                   {
                     viewsList,
                     itemsList
                   },
-                  new Func<int?>[]
+                  new[]
                   {
                     viewsListCount,
                     itemsListCount
